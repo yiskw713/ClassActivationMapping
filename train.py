@@ -174,7 +174,7 @@ def main():
     test_loader = DataLoader(test_data, batch_size=CONFIG.batch_size, shuffle=False, num_workers=CONFIG.num_workers)
 
 
-    model = VGG16(CONFIG.in_channel, CONFIG.out_channel)
+    model = VGG16(CONFIG.in_channel, CONFIG.n_classes)
 
 
     """ optimizer, criterion """
