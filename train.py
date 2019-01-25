@@ -175,7 +175,7 @@ def main():
 
 
     model = VGG16(CONFIG.in_channel, CONFIG.n_classes)
-
+    model.to(args.device)
 
     """ optimizer, criterion """
     optimizer = optim.Adam(model.classifier.parameters(), lr=CONFIG.learning_rate)
