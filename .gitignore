@@ -2,8 +2,6 @@
 __pycache__
 .vscode
 .DS_Store
-part-affordance-dataset/tools/*/*.mat
-part-affordance-dataset/tools/*/*.jpg
-part-affordance-dataset/tools/*/*.png
+part-affordance-dataset/tools
 *.prm
 
