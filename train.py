@@ -20,6 +20,7 @@ from tensorboardX import SummaryWriter
 
 from dataset import PartAffordanceDataset, ToTensor, CenterCrop, Normalize
 from model.vgg16 import VGG16
+from model.resnet import resnet50, resnet101, resnet152
 
 
 def get_arguments():
@@ -174,8 +175,20 @@ def main():
     test_loader = DataLoader(test_data, batch_size=CONFIG.batch_size, shuffle=False, num_workers=CONFIG.num_workers)
 
 
-    model = VGG16(CONFIG.in_channel, CONFIG.n_classes)
+    if CONFIG.model == "vgg":
+        model = VGG16(CONFIG.in_channel, CONFIG.n_classes)
+    elif CONFIG.model == "resnet50":
+        model = resnet50(pretrained=True)
+    elif CONFIG.model == "resnet101":
+        model = resnet101(pretrained=True)
+    elif CONFIG.model == "resnet152":
+        model = resnet152(pretrained=True)
+    else:
+        print('vgg16 will be used.')
+        model = VGG16(CONFIG.in_channel, CONFIG.n_classes)
+
     model.to(args.device)
+
 
     """ optimizer, criterion """
     optimizer = optim.Adam(model.classifier.parameters(), lr=CONFIG.learning_rate)
