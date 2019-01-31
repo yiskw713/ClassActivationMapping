@@ -116,7 +116,7 @@ class ResNet(nn.Module):
 
 
 
-def resnet50(pretrained=False, n_classes):
+def resnet50(n_classes, pretrained=False):
     """Constructs a ResNet-50 model.
 
     Args:
@@ -131,7 +131,7 @@ def resnet50(pretrained=False, n_classes):
 
 
 
-def resnet101(pretrained=False, n_classes):
+def resnet101(n_classes, pretrained=False):
     """Constructs a ResNet-101 model.
 
     Args:
@@ -145,7 +145,7 @@ def resnet101(pretrained=False, n_classes):
 
 
 
-def resnet152(pretrained=False, n_classes):
+def resnet152(n_classes, pretrained=False):
     """Constructs a ResNet-152 model.
 
     Args:
