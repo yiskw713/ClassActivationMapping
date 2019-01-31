@@ -1,102 +1,0 @@
-nohup: ignoring input
-  0%|          | 0/100 [00:00<?, ?it/s]  1%|          | 1/100 [07:53<13:00:47, 473.20s/it]epoch: 0	loss_train: 0.49232	loss_val: 19.05941	accuracy: 0.79197
-  2%|▏         | 2/100 [15:41<12:50:19, 471.63s/it]epoch: 1	loss_train: 0.46826	loss_val: 18.75158	accuracy: 0.79197
-  3%|▎         | 3/100 [23:29<12:40:46, 470.58s/it]epoch: 2	loss_train: 0.45671	loss_val: 18.13569	accuracy: 0.79439
-  4%|▍         | 4/100 [31:17<12:31:51, 469.91s/it]epoch: 3	loss_train: 0.44704	loss_val: 17.83249	accuracy: 0.79863
-  5%|▌         | 5/100 [39:05<12:23:12, 469.39s/it]epoch: 4	loss_train: 0.43871	loss_val: 17.46521	accuracy: 0.80202
-  6%|▌         | 6/100 [46:54<12:14:55, 469.10s/it]epoch: 5	loss_train: 0.43120	loss_val: 17.20787	accuracy: 0.81406
-  7%|▋         | 7/100 [54:42<12:06:44, 468.86s/it]epoch: 6	loss_train: 0.42487	loss_val: 16.94588	accuracy: 0.81430
-  8%|▊         | 8/100 [1:02:30<11:58:39, 468.69s/it]epoch: 7	loss_train: 0.41860	loss_val: 16.74448	accuracy: 0.81651
-  9%|▉         | 9/100 [1:10:19<11:50:37, 468.55s/it]epoch: 8	loss_train: 0.41340	loss_val: 16.63548	accuracy: 0.81985
- 10%|█         | 10/100 [1:18:07<11:42:38, 468.43s/it]epoch: 9	loss_train: 0.40827	loss_val: 16.46646	accuracy: 0.82436
- 11%|█         | 11/100 [1:25:55<11:34:48, 468.41s/it]epoch: 10	loss_train: 0.40393	loss_val: 16.25677	accuracy: 0.83075
- 12%|█▏        | 12/100 [1:33:43<11:26:58, 468.39s/it]epoch: 11	loss_train: 0.39993	loss_val: 15.99080	accuracy: 0.82810
- 13%|█▎        | 13/100 [1:41:32<11:19:11, 468.41s/it]epoch: 12	loss_train: 0.39458	loss_val: 15.74985	accuracy: 0.83473
- 14%|█▍        | 14/100 [1:49:20<11:11:20, 468.38s/it]epoch: 13	loss_train: 0.39150	loss_val: 15.84472	accuracy: 0.83874
- 15%|█▌        | 15/100 [1:57:09<11:03:34, 468.41s/it]epoch: 14	loss_train: 0.38830	loss_val: 15.63117	accuracy: 0.84271
- 16%|█▌        | 16/100 [2:04:57<10:55:45, 468.39s/it]epoch: 15	loss_train: 0.38447	loss_val: 15.46126	accuracy: 0.84224
- 17%|█▋        | 17/100 [2:12:45<10:47:52, 468.34s/it]epoch: 16	loss_train: 0.38178	loss_val: 15.39721	accuracy: 0.84682
- 18%|█▊        | 18/100 [2:20:34<10:40:02, 468.33s/it]epoch: 17	loss_train: 0.37906	loss_val: 15.31627	accuracy: 0.84736
- 19%|█▉        | 19/100 [2:28:22<10:32:12, 468.31s/it]epoch: 18	loss_train: 0.37663	loss_val: 15.69575	accuracy: 0.85051
- 20%|██        | 20/100 [2:36:10<10:24:19, 468.24s/it]epoch: 19	loss_train: 0.37387	loss_val: 15.08572	accuracy: 0.85536
- 21%|██        | 21/100 [2:43:58<10:16:24, 468.16s/it]epoch: 20	loss_train: 0.37124	loss_val: 15.02322	accuracy: 0.85316
- 22%|██▏       | 22/100 [2:51:46<10:08:32, 468.10s/it]epoch: 21	loss_train: 0.36951	loss_val: 16.52164	accuracy: 0.83223
- 23%|██▎       | 23/100 [2:59:34<10:00:44, 468.11s/it]epoch: 22	loss_train: 0.36691	loss_val: 14.84359	accuracy: 0.85912
- 24%|██▍       | 24/100 [3:07:22<9:52:59, 468.15s/it] epoch: 23	loss_train: 0.36549	loss_val: 14.90583	accuracy: 0.85952
- 25%|██▌       | 25/100 [3:15:10<9:45:09, 468.13s/it]epoch: 24	loss_train: 0.36353	loss_val: 14.67250	accuracy: 0.85950
- 26%|██▌       | 26/100 [3:22:58<9:37:17, 468.07s/it]epoch: 25	loss_train: 0.36104	loss_val: 14.49334	accuracy: 0.86128
- 27%|██▋       | 27/100 [3:30:46<9:29:27, 468.05s/it]epoch: 26	loss_train: 0.35957	loss_val: 14.52913	accuracy: 0.86207
- 28%|██▊       | 28/100 [3:38:34<9:21:33, 467.97s/it]epoch: 27	loss_train: 0.35772	loss_val: 14.37342	accuracy: 0.85893
- 29%|██▉       | 29/100 [3:46:22<9:13:45, 467.96s/it]epoch: 28	loss_train: 0.35589	loss_val: 14.23855	accuracy: 0.85868
- 30%|███       | 30/100 [3:54:10<9:05:55, 467.94s/it]epoch: 29	loss_train: 0.35464	loss_val: 14.51002	accuracy: 0.85818
- 31%|███       | 31/100 [4:01:58<8:58:12, 468.01s/it]epoch: 30	loss_train: 0.35347	loss_val: 14.28867	accuracy: 0.86668
- 32%|███▏      | 32/100 [4:09:46<8:50:22, 467.98s/it]epoch: 31	loss_train: 0.35164	loss_val: 14.41026	accuracy: 0.86499
- 33%|███▎      | 33/100 [4:17:34<8:42:34, 467.98s/it]epoch: 32	loss_train: 0.35077	loss_val: 15.45528	accuracy: 0.84771
- 34%|███▍      | 34/100 [4:25:22<8:34:46, 467.97s/it]epoch: 33	loss_train: 0.34860	loss_val: 14.03662	accuracy: 0.86440
- 35%|███▌      | 35/100 [4:33:10<8:26:58, 467.98s/it]epoch: 34	loss_train: 0.34718	loss_val: 14.11859	accuracy: 0.86732
- 36%|███▌      | 36/100 [4:40:58<8:19:10, 467.98s/it]epoch: 35	loss_train: 0.34682	loss_val: 14.84524	accuracy: 0.86291
- 37%|███▋      | 37/100 [4:48:46<8:11:23, 468.00s/it]epoch: 36	loss_train: 0.34559	loss_val: 14.11391	accuracy: 0.86739
- 38%|███▊      | 38/100 [4:56:34<8:03:33, 467.96s/it]epoch: 37	loss_train: 0.34372	loss_val: 13.95726	accuracy: 0.86972
- 39%|███▉      | 39/100 [5:04:22<7:55:42, 467.92s/it]epoch: 38	loss_train: 0.34278	loss_val: 14.43512	accuracy: 0.86613
- 40%|████      | 40/100 [5:12:09<7:47:54, 467.91s/it]epoch: 39	loss_train: 0.34213	loss_val: 13.84572	accuracy: 0.86972
- 41%|████      | 41/100 [5:19:57<7:40:05, 467.88s/it]epoch: 40	loss_train: 0.34151	loss_val: 13.74159	accuracy: 0.87138
- 42%|████▏     | 42/100 [5:27:45<7:32:17, 467.88s/it]epoch: 41	loss_train: 0.33964	loss_val: 13.74361	accuracy: 0.86952
- 43%|████▎     | 43/100 [5:35:33<7:24:28, 467.87s/it]epoch: 42	loss_train: 0.33846	loss_val: 13.74836	accuracy: 0.87029
- 44%|████▍     | 44/100 [5:43:21<7:16:38, 467.82s/it]epoch: 43	loss_train: 0.33764	loss_val: 14.01282	accuracy: 0.86985
- 45%|████▌     | 45/100 [5:51:09<7:08:50, 467.82s/it]epoch: 44	loss_train: 0.33743	loss_val: 13.94506	accuracy: 0.86960
- 46%|████▌     | 46/100 [5:58:56<7:01:03, 467.84s/it]epoch: 45	loss_train: 0.33621	loss_val: 14.02886	accuracy: 0.86982
- 47%|████▋     | 47/100 [6:06:44<6:53:14, 467.83s/it]epoch: 46	loss_train: 0.33488	loss_val: 13.87241	accuracy: 0.86990
- 48%|████▊     | 48/100 [6:14:32<6:45:27, 467.84s/it]epoch: 47	loss_train: 0.33425	loss_val: 13.66944	accuracy: 0.87215
- 49%|████▉     | 49/100 [6:22:20<6:37:40, 467.85s/it]epoch: 48	loss_train: 0.33358	loss_val: 13.94838	accuracy: 0.86611
- 50%|█████     | 50/100 [6:30:08<6:29:53, 467.87s/it]epoch: 49	loss_train: 0.33258	loss_val: 13.84236	accuracy: 0.87262
- 51%|█████     | 51/100 [6:37:56<6:22:09, 467.94s/it]epoch: 50	loss_train: 0.33240	loss_val: 13.52105	accuracy: 0.87250
- 52%|█████▏    | 52/100 [6:45:44<6:14:23, 467.99s/it]epoch: 51	loss_train: 0.33086	loss_val: 13.47564	accuracy: 0.87487
- 53%|█████▎    | 53/100 [6:53:32<6:06:37, 468.04s/it]epoch: 52	loss_train: 0.33122	loss_val: 13.50609	accuracy: 0.87435
- 54%|█████▍    | 54/100 [7:01:20<5:58:48, 468.02s/it]epoch: 53	loss_train: 0.32988	loss_val: 13.68237	accuracy: 0.87359
- 55%|█████▌    | 55/100 [7:09:08<5:51:01, 468.03s/it]epoch: 54	loss_train: 0.33003	loss_val: 13.33175	accuracy: 0.87524
- 56%|█████▌    | 56/100 [7:16:56<5:43:13, 468.04s/it]epoch: 55	loss_train: 0.32890	loss_val: 13.20667	accuracy: 0.87547
- 57%|█████▋    | 57/100 [7:24:44<5:35:25, 468.05s/it]epoch: 56	loss_train: 0.32878	loss_val: 13.42298	accuracy: 0.87562
- 58%|█████▊    | 58/100 [7:32:32<5:27:37, 468.04s/it]epoch: 57	loss_train: 0.32728	loss_val: 13.37826	accuracy: 0.87383
- 59%|█████▉    | 59/100 [7:40:21<5:19:52, 468.11s/it]epoch: 58	loss_train: 0.32761	loss_val: 13.25960	accuracy: 0.87572
- 60%|██████    | 60/100 [7:48:09<5:12:05, 468.13s/it]epoch: 59	loss_train: 0.32694	loss_val: 13.75558	accuracy: 0.86816
- 61%|██████    | 61/100 [7:55:57<5:04:17, 468.15s/it]epoch: 60	loss_train: 0.32568	loss_val: 13.28851	accuracy: 0.87624
- 62%|██████▏   | 62/100 [8:03:45<4:56:29, 468.15s/it]epoch: 61	loss_train: 0.32519	loss_val: 13.43350	accuracy: 0.87284
- 63%|██████▎   | 63/100 [8:11:33<4:48:41, 468.16s/it]epoch: 62	loss_train: 0.32528	loss_val: 13.09129	accuracy: 0.87695
- 64%|██████▍   | 64/100 [8:19:22<4:40:54, 468.17s/it]epoch: 63	loss_train: 0.32413	loss_val: 13.19891	accuracy: 0.87539
- 65%|██████▌   | 65/100 [8:27:10<4:33:06, 468.19s/it]epoch: 64	loss_train: 0.32487	loss_val: 15.71189	accuracy: 0.83399
- 66%|██████▌   | 66/100 [8:34:58<4:25:18, 468.20s/it]epoch: 65	loss_train: 0.32330	loss_val: 13.25342	accuracy: 0.87626
- 67%|██████▋   | 67/100 [8:42:46<4:17:30, 468.20s/it]epoch: 66	loss_train: 0.32465	loss_val: 13.17937	accuracy: 0.87604
- 68%|██████▊   | 68/100 [8:50:34<4:09:40, 468.15s/it]epoch: 67	loss_train: 0.32243	loss_val: 12.91363	accuracy: 0.87728
- 69%|██████▉   | 69/100 [8:58:22<4:01:52, 468.14s/it]epoch: 68	loss_train: 0.32236	loss_val: 13.17340	accuracy: 0.87500
- 70%|███████   | 70/100 [9:06:11<3:54:04, 468.14s/it]epoch: 69	loss_train: 0.32163	loss_val: 13.30022	accuracy: 0.87510
- 71%|███████   | 71/100 [9:13:59<3:46:15, 468.12s/it]epoch: 70	loss_train: 0.32113	loss_val: 13.15762	accuracy: 0.87534
- 72%|███████▏  | 72/100 [9:21:47<3:38:27, 468.11s/it]epoch: 71	loss_train: 0.32040	loss_val: 13.28859	accuracy: 0.87522
- 73%|███████▎  | 73/100 [9:29:35<3:30:38, 468.10s/it]epoch: 72	loss_train: 0.32128	loss_val: 13.73476	accuracy: 0.87311
- 74%|███████▍  | 74/100 [9:37:23<3:22:50, 468.08s/it]epoch: 73	loss_train: 0.32064	loss_val: 12.92020	accuracy: 0.87735
- 75%|███████▌  | 75/100 [9:45:11<3:15:03, 468.12s/it]epoch: 74	loss_train: 0.32037	loss_val: 13.51064	accuracy: 0.87512
- 76%|███████▌  | 76/100 [9:52:59<3:07:14, 468.12s/it]epoch: 75	loss_train: 0.31977	loss_val: 13.02808	accuracy: 0.87896
- 77%|███████▋  | 77/100 [10:00:47<2:59:26, 468.12s/it]epoch: 76	loss_train: 0.31894	loss_val: 13.29680	accuracy: 0.87500
- 78%|███████▊  | 78/100 [10:08:35<2:51:37, 468.08s/it]epoch: 77	loss_train: 0.31959	loss_val: 12.86755	accuracy: 0.87690
- 79%|███████▉  | 79/100 [10:16:23<2:43:49, 468.07s/it]epoch: 78	loss_train: 0.31854	loss_val: 12.87819	accuracy: 0.87745
- 80%|████████  | 80/100 [10:24:11<2:36:00, 468.04s/it]epoch: 79	loss_train: 0.31829	loss_val: 13.41104	accuracy: 0.87596
- 81%|████████  | 81/100 [10:31:59<2:28:13, 468.06s/it]epoch: 80	loss_train: 0.31774	loss_val: 13.17552	accuracy: 0.87581
- 82%|████████▏ | 82/100 [10:39:47<2:20:25, 468.08s/it]epoch: 81	loss_train: 0.31769	loss_val: 12.93406	accuracy: 0.87780
- 83%|████████▎ | 83/100 [10:47:36<2:12:37, 468.09s/it]epoch: 82	loss_train: 0.31776	loss_val: 13.00438	accuracy: 0.87708
- 84%|████████▍ | 84/100 [10:55:24<2:04:49, 468.08s/it]epoch: 83	loss_train: 0.31771	loss_val: 12.95973	accuracy: 0.87705
- 85%|████████▌ | 85/100 [11:03:12<1:57:01, 468.11s/it]epoch: 84	loss_train: 0.31776	loss_val: 12.92426	accuracy: 0.87849
- 86%|████████▌ | 86/100 [11:11:00<1:49:12, 468.06s/it]epoch: 85	loss_train: 0.31773	loss_val: 13.04962	accuracy: 0.87572
- 87%|████████▋ | 87/100 [11:18:48<1:41:24, 468.04s/it]epoch: 86	loss_train: 0.31678	loss_val: 12.94537	accuracy: 0.87789
- 88%|████████▊ | 88/100 [11:26:36<1:33:36, 468.04s/it]epoch: 87	loss_train: 0.31765	loss_val: 13.01034	accuracy: 0.87614
- 89%|████████▉ | 89/100 [11:34:24<1:25:48, 468.05s/it]epoch: 88	loss_train: 0.31680	loss_val: 16.21367	accuracy: 0.82223
- 90%|█████████ | 90/100 [11:42:12<1:18:00, 468.07s/it]epoch: 89	loss_train: 0.31684	loss_val: 13.14744	accuracy: 0.87574
- 91%|█████████ | 91/100 [11:50:00<1:10:12, 468.08s/it]epoch: 90	loss_train: 0.31573	loss_val: 13.60446	accuracy: 0.87492
- 92%|█████████▏| 92/100 [11:57:48<1:02:25, 468.14s/it]epoch: 91	loss_train: 0.31662	loss_val: 12.68701	accuracy: 0.88007
- 93%|█████████▎| 93/100 [12:05:36<54:36, 468.09s/it]  epoch: 92	loss_train: 0.31614	loss_val: 13.19033	accuracy: 0.87745
- 94%|█████████▍| 94/100 [12:13:24<46:48, 468.10s/it]epoch: 93	loss_train: 0.31663	loss_val: 13.02034	accuracy: 0.87688
- 95%|█████████▌| 95/100 [12:21:13<39:00, 468.11s/it]epoch: 94	loss_train: 0.31585	loss_val: 12.71137	accuracy: 0.87918
- 96%|█████████▌| 96/100 [12:29:01<31:12, 468.12s/it]epoch: 95	loss_train: 0.31697	loss_val: 12.88886	accuracy: 0.87683
- 97%|█████████▋| 97/100 [12:36:49<23:24, 468.15s/it]epoch: 96	loss_train: 0.31627	loss_val: 12.59797	accuracy: 0.88156
- 98%|█████████▊| 98/100 [12:44:37<15:36, 468.13s/it]epoch: 97	loss_train: 0.31693	loss_val: 13.04568	accuracy: 0.87918
- 99%|█████████▉| 99/100 [12:52:25<07:48, 468.10s/it]epoch: 98	loss_train: 0.31658	loss_val: 13.34928	accuracy: 0.87425
-100%|██████████| 100/100 [13:00:13<00:00, 468.09s/it]
-epoch: 99	loss_train: 0.31658	loss_val: 12.82999	accuracy: 0.87814
