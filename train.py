@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
+import torch.utils.model_zoo as model_zoo
 import torchvision
 
 from torch.utils.data import Dataset, DataLoader
@@ -19,7 +20,7 @@ from addict import Dict
 from tensorboardX import SummaryWriter
 
 from dataset import PartAffordanceDataset, ToTensor, CenterCrop, Normalize
-from model.vgg16 import VGG16
+from model.vgg import vgg16_bn
 from model.resnet import resnet50, resnet101, resnet152
 
 
@@ -176,7 +177,7 @@ def main():
 
 
     if CONFIG.model == "vgg":
-        model = VGG16(CONFIG.in_channel, CONFIG.n_classes)
+        model = vgg16_bn(CONFIG.n_classes, pretrained=True)
     elif CONFIG.model == "resnet50":
         model = resnet50(n_classes=CONFIG.n_classes, pretrained=True)
     elif CONFIG.model == "resnet101":
@@ -184,15 +185,15 @@ def main():
     elif CONFIG.model == "resnet152":
         model = resnet152(n_classes=CONFIG.n_classes, pretrained=True)
     else:
-        print('vgg16 will be used.')
-        model = VGG16(CONFIG.in_channel, CONFIG.n_classes)
+        print('resnet50 will be used.')
+        model = resnet50(n_classes=CONFIG.n_classes, pretrained=True)
 
     model.to(args.device)
 
 
     """ optimizer, criterion """
-    optimizer = optim.Adam(model.classifier.parameters(), lr=CONFIG.learning_rate)
-    
+    optimizer = optim.Adam(model.parameters(), lr=CONFIG.learning_rate)
+
     criterion = nn.BCEWithLogitsLoss()
 
     losses_train = []
