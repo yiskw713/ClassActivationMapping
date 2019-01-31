@@ -19,7 +19,7 @@ from addict import Dict
 from tensorboardX import SummaryWriter
 
 from dataset import PartAffordanceDataset, ToTensor, CenterCrop, Normalize
-from model import VGG16
+from model.vgg16 import VGG16
 
 
 def get_arguments():
@@ -107,7 +107,7 @@ def eval_model(model, test_loader, criterion, config, device):
             accurate_num += torch.sum(h == y, 0).float()
 
 
-    eval_loss = eval_loss / len(y)
+    eval_loss = eval_loss / len(test_loader)
 
     ''' accuracy of each class'''
     class_accuracy = accurate_num / total_num
