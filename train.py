@@ -178,11 +178,11 @@ def main():
     if CONFIG.model == "vgg":
         model = VGG16(CONFIG.in_channel, CONFIG.n_classes)
     elif CONFIG.model == "resnet50":
-        model = resnet50(pretrained=True)
+        model = resnet50(pretrained=True, n_classes=CONFIG.n_classes)
     elif CONFIG.model == "resnet101":
-        model = resnet101(pretrained=True)
+        model = resnet101(pretrained=True, n_classes=CONFIG.n_classes)
     elif CONFIG.model == "resnet152":
-        model = resnet152(pretrained=True)
+        model = resnet152(pretrained=True, n_classes=CONFIG.n_classes)
     else:
         print('vgg16 will be used.')
         model = VGG16(CONFIG.in_channel, CONFIG.n_classes)

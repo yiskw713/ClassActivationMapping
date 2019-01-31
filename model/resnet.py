@@ -56,7 +56,7 @@ class Bottleneck(nn.Module):
 
 class ResNet(nn.Module):
 
-    def __init__(self, block, layers, num_classes=7):
+    def __init__(self, block, layers, num_classes=1000):
         self.inplanes = 64
         super(ResNet, self).__init__()
         self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
@@ -116,39 +116,43 @@ class ResNet(nn.Module):
 
 
 
-def resnet50(pretrained=False, **kwargs):
+def resnet50(pretrained=False, n_classes):
     """Constructs a ResNet-50 model.
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
+    model = ResNet(Bottleneck, [3, 4, 6, 3])
     if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet50']), strict=False)
+        model.load_state_dict(model_zoo.load_url(model_urls['resnet50']))
+    model.fc = nn.Linear(512*Bottleneck.expansion, n_classes)
+
     return model
 
 
 
-def resnet101(pretrained=False, **kwargs):
+def resnet101(pretrained=False, n_classes):
     """Constructs a ResNet-101 model.
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = ResNet(Bottleneck, [3, 4, 23, 3], **kwargs)
+    model = ResNet(Bottleneck, [3, 4, 23, 3])
     if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet101']), strict=False)
+        model.load_state_dict(model_zoo.load_url(model_urls['resnet101']))
+    model.fc = nn.Linear(512*Bottleneck.expansion, n_classes)
     return model
 
 
 
-def resnet152(pretrained=False, **kwargs):
+def resnet152(pretrained=False, n_classes):
     """Constructs a ResNet-152 model.
 
     Args:
         pretrained (bool): If True, returns a model pre-trained on ImageNet
     """
-    model = ResNet(Bottleneck, [3, 8, 36, 3], **kwargs)
+    model = ResNet(Bottleneck, [3, 8, 36, 3])
     if pretrained:
-        model.load_state_dict(model_zoo.load_url(model_urls['resnet152']), strict=False)
+        model.load_state_dict(model_zoo.load_url(model_urls['resnet152']))
+    model.fc = nn.Linear(512*Bottleneck.expansion, n_classes)
     return model
