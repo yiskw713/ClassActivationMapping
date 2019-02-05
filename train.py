@@ -113,7 +113,7 @@ def eval_model(model, test_loader, criterion, config, device):
     aff_class_accuracy = aff_accurate_num / aff_total_num
     aff_accuracy = torch.sum(aff_accurate_num) / torch.sum(aff_total_num)
 
-    return [loss_obj.item(), ojb_class_accuracy, obj_accuracy.item(), 
+    return [loss_obj.item(), obj_class_accuracy, obj_accuracy.item(), 
             loss_aff.item(), aff_class_accuracy, aff_accuracy.item()
             ]
 
