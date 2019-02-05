@@ -64,8 +64,8 @@ class CenterCrop(object):
 
 
 
-def one_hot(label, n_classes, dtype, requires_grad=True):
-    one_hot_label = torch.eye(n_classes, dtype=dtype, requires_grad=requires_grad)[label]
+def one_hot(label, n_classes, dtype):
+    one_hot_label = torch.eye(n_classes, dtype=dtype)[label]
     return one_hot_label
 
 
