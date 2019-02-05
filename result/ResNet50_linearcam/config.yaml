@@ -1,10 +1,10 @@
-model: resnet50
+model: ResNet50_linearcam
 
 class_weight_flag: False        # if you use class weight to calculate cross entropy or not
 writer_flag: True              # if you use tensorboardx or not
 
-in_channel: 3
-n_classes: 7
+obj_classes: 7
+aff_classes: 17
 height: 256
 width: 256
 batch_size: 8
@@ -13,6 +13,6 @@ max_epoch: 10
 learning_rate: 0.0001
 poly_power: 0.9
 
-result_path: ./result/resnet50
+result_path: ./result/ResNet50_linearcam
 train_data: ./part-affordance-dataset/train.csv
 test_data: ./part-affordance-dataset/test.csv

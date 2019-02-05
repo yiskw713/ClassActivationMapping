@@ -27,14 +27,18 @@ class PartAffordanceDataset(Dataset):
     def __getitem__(self, idx):
         image_path = self.df.iloc[idx, 0]
         label_path = self.df.iloc[idx, 1]
+        obj_label = self.df.iloc[idx, 2]
+
         image = Image.open(image_path)
-        label = np.load(label_path)
+        aff_label = np.load(label_path)
         
-        sample = {'image': image, 'label': label}
+        sample = {'image': image, 'aff_label': aff_label}
         
         if self.transform:
             sample = self.transform(sample)
         
+        sample['obj_label'] = obj_label
+
         return sample
 
 
