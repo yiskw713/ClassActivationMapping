@@ -160,7 +160,7 @@ def main():
                                         config=CONFIG,
                                         transform=transforms.Compose([
                                                     CenterCrop(CONFIG),
-                                                    ToTensor(),
+                                                    ToTensor(CONFIG),
                                                     Normalize()
                                     ]))
 
@@ -168,7 +168,7 @@ def main():
                                         config=CONFIG,
                                         transform=transforms.Compose([
                                                     CenterCrop(CONFIG),
-                                                    ToTensor(),
+                                                    ToTensor(CONFIG),
                                                     Normalize()
                                     ]))
 

@@ -64,11 +64,19 @@ class CenterCrop(object):
 
 
 
+def one_hot(label, n_classes, dtype, requires_grad=True):
+    one_hot_label = torch.eye(n_classes, dtype=dtype, requires_grad=requires_grad)[label].transpose(1, 3).transpose(2, 3)
+    return one_hot_label
+
+
 class ToTensor(object):
+    def __init__(self, config):
+        self.config = config
+    
     def __call__(self, sample):
         image, obj_label, aff_label = sample['image'], sample['obj_label'], sample['aff_label']
         return {'image': transforms.functional.to_tensor(image).float(),
-                'obj_label': torch.tensor(obj_label).float(),
+                'obj_label': one_hot(obj_label, self.config.obj_classes, dtype=torch.float),
                 'aff_label': torch.from_numpy(aff_label).float()}
 
 
