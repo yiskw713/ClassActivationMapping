@@ -68,7 +68,7 @@ class ToTensor(object):
     def __call__(self, sample):
         image, obj_label, aff_label = sample['image'], sample['obj_label'], sample['aff_label']
         return {'image': transforms.functional.to_tensor(image).float(),
-                'obj_label': torch.from_numpy(obj_label).float(),
+                'obj_label': torch.tensor(obj_label).float(),
                 'aff_label': torch.from_numpy(aff_label).float()}
 
 
