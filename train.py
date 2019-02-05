@@ -228,8 +228,8 @@ def main():
         
         # validation
         loss_val_obj, obj_class_accuracy, obj_accuracy, loss_val_aff, aff_class_accuracy, aff_accuracy = eval_model(model, test_loader, criterion, CONFIG, args.device)
-        losses_val.append(loss_val_obj)
-        losses_val.append(loss_val_aff)
+        losses_val_obj.append(loss_val_obj)
+        losses_val_aff.append(loss_val_aff)
         losses_val.append(loss_val_obj + loss_val_aff)
         
         obj_class_accuracy_val.append(obj_class_accuracy)
