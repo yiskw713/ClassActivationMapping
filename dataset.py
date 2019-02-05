@@ -32,15 +32,12 @@ class PartAffordanceDataset(Dataset):
         image = Image.open(image_path)
         aff_label = np.load(label_path)
         
-        sample = {'image': image, 'aff_label': aff_label}
+        sample = {'image': image, 'obj_label': obj_label, 'aff_label': aff_label}
         
         if self.transform:
             sample = self.transform(sample)
-        
-        sample['obj_label'] = obj_label
 
         return sample
-
 
 
 
@@ -60,28 +57,19 @@ class CenterCrop(object):
         self.config = config
     
     def __call__(self, sample):
-        if 'label' in sample:
-            image, label = sample['image'], sample['label']
-            image = crop_center_pil_image(image, self.config.height, self.config.width)
-            return {'image': image, 'label': label}
-            
-        else:
-            image = sample['image']
-            image = crop_center_pil_image(image, self.config.height, self.config.width)
-            return {'image': image}
+        image = sample['image']
+        image = crop_center_pil_image(image, self.config.height, self.config.width)
+        sample['image'] = image
+        return sample
 
 
 
 class ToTensor(object):
     def __call__(self, sample):
-        
-        if 'label' in sample:
-            image, label = sample['image'], sample['label']
-            return {'image': transforms.functional.to_tensor(image).float(), 
-                    'label': torch.from_numpy(label).float()}
-        else:
-            image = sample['image']
-            return {'image': transforms.functional.to_tensor(image).float()}
+        image, obj_label, aff_label = sample['image'], sample['obj_label'], sample['aff_label']
+        return {'image': transforms.functional.to_tensor(image).float(),
+                'obj_label': torch.from_numpy(obj_label).float(),
+                'aff_label': torch.from_numpy(aff_label).float()}
 
 
 
@@ -92,15 +80,11 @@ class Normalize(object):
 
 
     def __call__(self, sample):
+        image = sample['image']
+        image = transforms.functional.normalize(image, self.mean, self.std)
+        sample['image'] = image
+        return sample
 
-        if 'label' in sample:
-            image, label = sample['image'], sample['label']
-            image = transforms.functional.normalize(image, self.mean, self.std)
-            return {'image': image, 'label': label}
-        else:
-            image = sample['image']
-            image = transforms.functional.normalize(image, self.mean, self.std)
-            return {'image': image}
 
 
 
