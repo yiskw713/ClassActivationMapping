@@ -1,0 +1,22 @@
+nohup: ignoring input
+  0%|          | 0/20 [00:00<?, ?it/s]  5%|▌         | 1/20 [09:56<3:08:46, 596.11s/it]epoch: 0	loss_train: 0.05173	loss_val: 0.01101	obj_accuracy: 0.99983	aff_accuracy: 0.99695
+ 10%|█         | 2/20 [19:52<2:58:51, 596.21s/it]epoch: 1	loss_train: 0.01800	loss_val: 0.01827	obj_accuracy: 0.99958	aff_accuracy: 0.99354
+ 15%|█▌        | 3/20 [29:48<2:48:51, 595.99s/it]epoch: 2	loss_train: 0.01320	loss_val: 0.01251	obj_accuracy: 0.99968	aff_accuracy: 0.99641
+ 20%|██        | 4/20 [39:43<2:38:53, 595.86s/it]epoch: 3	loss_train: 0.01053	loss_val: 0.00782	obj_accuracy: 0.99991	aff_accuracy: 0.99799
+ 25%|██▌       | 5/20 [46:11<2:13:21, 533.46s/it]epoch: 4	loss_train: 0.00790	loss_val: 0.00817	obj_accuracy: 0.99993	aff_accuracy: 0.99794
+ 30%|███       | 6/20 [51:07<1:47:51, 462.28s/it]epoch: 5	loss_train: 0.00643	loss_val: 0.00643	obj_accuracy: 1.00000	aff_accuracy: 0.99824
+ 35%|███▌      | 7/20 [56:03<1:29:21, 412.44s/it]epoch: 6	loss_train: 0.00675	loss_val: 0.00623	obj_accuracy: 1.00000	aff_accuracy: 0.99832
+ 40%|████      | 8/20 [1:00:59<1:15:30, 377.56s/it]epoch: 7	loss_train: 0.00491	loss_val: 0.00602	obj_accuracy: 1.00000	aff_accuracy: 0.99842
+ 45%|████▌     | 9/20 [1:05:55<1:04:43, 353.09s/it]epoch: 8	loss_train: 0.00412	loss_val: 0.00585	obj_accuracy: 1.00000	aff_accuracy: 0.99827
+ 50%|█████     | 10/20 [1:10:52<56:00, 336.00s/it] epoch: 9	loss_train: 0.00322	loss_val: 0.00668	obj_accuracy: 0.99997	aff_accuracy: 0.99794
+ 55%|█████▌    | 11/20 [1:15:48<48:36, 324.01s/it]epoch: 10	loss_train: 0.00382	loss_val: 0.00447	obj_accuracy: 1.00000	aff_accuracy: 0.99842
+ 60%|██████    | 12/20 [1:20:44<42:05, 315.69s/it]epoch: 11	loss_train: 0.00170	loss_val: 0.00621	obj_accuracy: 0.99999	aff_accuracy: 0.99846
+ 65%|██████▌   | 13/20 [1:25:41<36:09, 309.99s/it]epoch: 12	loss_train: 0.00166	loss_val: 0.00504	obj_accuracy: 1.00000	aff_accuracy: 0.99846
+ 70%|███████   | 14/20 [1:30:37<30:35, 305.88s/it]epoch: 13	loss_train: 0.00107	loss_val: 0.00617	obj_accuracy: 1.00000	aff_accuracy: 0.99824
+ 75%|███████▌  | 15/20 [1:35:33<25:15, 303.02s/it]epoch: 14	loss_train: 0.00074	loss_val: 0.00688	obj_accuracy: 1.00000	aff_accuracy: 0.99824
+ 80%|████████  | 16/20 [1:40:30<20:04, 301.08s/it]epoch: 15	loss_train: 0.00084	loss_val: 0.00790	obj_accuracy: 1.00000	aff_accuracy: 0.99832
+ 85%|████████▌ | 17/20 [1:45:26<14:58, 299.64s/it]epoch: 16	loss_train: 0.00028	loss_val: 0.00622	obj_accuracy: 1.00000	aff_accuracy: 0.99861
+ 90%|█████████ | 18/20 [1:50:22<09:57, 298.57s/it]epoch: 17	loss_train: 0.00015	loss_val: 0.00699	obj_accuracy: 1.00000	aff_accuracy: 0.99846
+ 95%|█████████▌| 19/20 [1:55:18<04:57, 297.89s/it]epoch: 18	loss_train: 0.00041	loss_val: 0.00746	obj_accuracy: 1.00000	aff_accuracy: 0.99851
+100%|██████████| 20/20 [2:00:15<00:00, 297.37s/it]
+epoch: 19	loss_train: 0.00003	loss_val: 0.00756	obj_accuracy: 1.00000	aff_accuracy: 0.99849

@@ -94,7 +94,38 @@ class Normalize(object):
         return sample
 
 
+'''
+obj_list = [
+        'bowl',
+        'cup',
+        'hammer',
+        'knife', 
+        'ladle',
+        'mallet',
+        'mug',
+        'pot',
+        'saw',
+        'scissors',
+        'scoop',
+        'shears',
+        'shovel',
+        'spoon',
+        'tenderizer',
+        'trowel',
+        'turner'
+]
 
+aff_list = [
+        'grasp',
+        'cut',
+        'scoop',
+        'contain',
+        'pound',
+        'support',
+        'wrap-grasp'
+]
+
+'''
 
 ''' 
 # if you want to calculate mean and std of each channel of the images,
