@@ -3,8 +3,8 @@ model: ResNet50_convcam
 class_weight_flag: False        # if you use class weight to calculate cross entropy or not
 writer_flag: True              # if you use tensorboardx or not
 
-obj_classes: 7
-aff_classes: 17
+obj_classes: 17
+aff_classes: 7
 height: 256
 width: 256
 batch_size: 8
