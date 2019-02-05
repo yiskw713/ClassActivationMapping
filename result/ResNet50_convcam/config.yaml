@@ -9,7 +9,7 @@ height: 256
 width: 256
 batch_size: 8
 num_workers: 4
-max_epoch: 10
+max_epoch: 20
 learning_rate: 0.0001
 poly_power: 0.9
 

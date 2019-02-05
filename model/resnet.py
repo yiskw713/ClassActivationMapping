@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torchvisions.models as models
+import torchvision.models as models
 
 
 class ResNet50_linearcam(nn.Module):
@@ -30,6 +30,7 @@ class ResNet50_linearcam(nn.Module):
         y_aff = self.fc_aff(x)
 
         return [y_obj, y_aff]
+
 
 
 

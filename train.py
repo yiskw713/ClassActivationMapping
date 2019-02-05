@@ -36,6 +36,7 @@ def get_arguments():
     return parser.parse_args()
 
 
+
 ''' training '''
 
 def full_train(model, sample, criterion, optimizer, device):
