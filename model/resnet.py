@@ -20,7 +20,6 @@ class ResNet50_linearcam(nn.Module):
             nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
-        
         x = self.feature(x)
         x = self.gap(x)
 
@@ -32,8 +31,6 @@ class ResNet50_linearcam(nn.Module):
         return [y_obj, y_aff]
 
 
-
-
 class ResNet50_convcam(nn.Module):
 
     def __init__(self, obj_classes, aff_classes, pretrained=True):
@@ -41,7 +38,6 @@ class ResNet50_convcam(nn.Module):
 
         resnet50 = models.resnet50(pretrained=pretrained)
         self.feature = nn.Sequential(*list(resnet50.children())[:-2])
-        
         self.conv_obj = nn.Conv2d(2048, obj_classes, (1, 1), stride=1)
         self.conv_aff = nn.Conv2d(2048, aff_classes, (1, 1), stride=1)
 
@@ -52,7 +48,6 @@ class ResNet50_convcam(nn.Module):
             nn.init.constant_(m.bias, 0)
 
     def forward(self, x):
-        
         x = self.feature(x)
 
         cam_obj = self.conv_obj(x)
