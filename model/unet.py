@@ -106,4 +106,4 @@ class UNet(nn.Module):
         y_obj = self.fc_obj(y_obj)
         y_aff = self.fc_aff(y_aff)
 
-        return x
+        return y_obj, y_aff
