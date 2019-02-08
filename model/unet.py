@@ -94,7 +94,6 @@ class UNet(nn.Module):
         x = self.up3(x, x3)
         x = self.up2(x, x2)
         x = self.up1(x, x1)
-        x = self.conv(x)
 
         y_obj = F.relu(self.bn_obj(self.conv_obj(x)))
         y_obj = self.gap(y_obj)
