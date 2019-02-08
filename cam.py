@@ -24,9 +24,9 @@ class SaveValues():
 
 """ Class Activation Mapping """
 
-# TODO: taraget_layer => target_layer_obj, target_layer_aff
+
 class CAM(object):
-    def __init__(self, model, target_layer):
+    def __init__(self, model, target_layer_obj, target_layer_aff):
         """
         Args:
             model: ResNet_linear()
@@ -34,10 +34,12 @@ class CAM(object):
         """
 
         self.model = model
-        self.target_layer = target_layer
+        self.target_layer_obj = target_layer_obj
+        self.target_layer_aff = target_layer_aff
 
         # save values of activations and gradients in target_layer
-        self.values = SaveValues(self.target_layer)
+        self.values_obj = SaveValues(self.target_layer_obj)
+        self.values_aff = SaveValues(self.target_layer_aff)
 
     def forward(self, x):
         """
@@ -70,11 +72,11 @@ class CAM(object):
         cams_aff = dict()
 
         for i in pred_obj.nonzero():
-            cam = self.getCAM(weight_fc_obj, i)
+            cam = self.getCAM(self.values_obj, weight_fc_obj, i)
             cams_obj[i[1].item()] = cam    # i[i] is object id
 
         for i in pred_aff.nonzero():
-            cam = self.getCAM(weight_fc_aff, i)
+            cam = self.getCAM(self.values_aff, weight_fc_aff, i)
             cams_aff[i[1].item()] = cam.data    # i[i] is affordance id
 
         return cams_obj, cams_aff
@@ -82,14 +84,15 @@ class CAM(object):
     def __call__(self, x):
         return self.forward(x)
 
-    def getCAM(self, weight_fc, index):
+    def getCAM(self, values, weight_fc, index):
         '''
+        values: the activations and gradients of target_layer
         activations: feature map before GAP.  shape => (N, C, H, W)
         weight_fc: the weight of fully connected layer.  shape => (num_classes, C)
         cam: class activation map.  shape=> (N, num_classes, H, W)
         '''
 
-        cam = F.conv2d(self.values.activations, weight=weight_fc[:, :, None, None])
+        cam = F.conv2d(values.activations, weight=weight_fc[:, :, None, None])
         _, _, h, w = cam.shape
 
         cam = cam[index[0], index[1], :, :]
@@ -110,8 +113,8 @@ class GradCAM(CAM):
         target_layer: conv_layer before Global Average Pooling
     """
 
-    def __init__(self, model, target_layer):
-        super().__init__(model, target_layer)
+    def __init__(self, model, target_layer_obj, target_layer_aff):
+        super().__init__(model, target_layer_obj, target_layer_aff)
 
     def forward(self, x):
         """
@@ -142,11 +145,11 @@ class GradCAM(CAM):
 
         # caluculate cam of each predicted class
         for i in pred_obj.nonzero():
-            cam = self.getGradCAM(score_obj, i)
+            cam = self.getGradCAM(self.values_obj, score_obj, i)
             cams_obj[i[1].item()] = cam
 
         for i in pred_aff.nonzero():
-            cam = self.getGradCAM(score_aff, i)
+            cam = self.getGradCAM(self.values_aff, score_aff, i)
             cams_aff[i[1].item()] = cam
 
         return cams_obj, cams_aff
@@ -154,11 +157,11 @@ class GradCAM(CAM):
     def __call__(self, x):
         return self.forward(x)
 
-    def getGradCAM(self, score, index):
+    def getGradCAM(self, values, score, index):
         self.model.zero_grad()
         score[index[0], index[1]].backward(retain_graph=True)
-        activations = self.values.activations
-        gradients = self.values.gradients
+        activations = values.activations
+        gradients = values.gradients
         n, c, _, _ = gradients.shape
         alpha = gradients.view(n, c, -1).mean(2)
         alpha = alpha.view(n, c, 1, 1)
@@ -178,8 +181,8 @@ class GradCAMpp(GradCAM):
         target_layer: conv_layer before Global Average Pooling
     """
 
-    def __init__(self, model, target_layer):
-        super().__init__(model, target_layer)
+    def __init__(self, model, target_layer_obj, target_layer_aff):
+        super().__init__(model, target_layer_obj, target_layer_aff)
 
     def forward(self, x):
         """
@@ -205,18 +208,16 @@ class GradCAMpp(GradCAM):
         print("predicted object ids {}".format(pred_obj))
         print("predicted affordance ids {}".format(pred_aff))
 
-        activations = self.values.activations
-
         cams_obj = dict()
         cams_aff = dict()
 
         # caluculate cam of each predicted class
         for i in pred_obj.nonzero():
-            cam = self.getGradCAMpp(score_obj, i)
+            cam = self.getGradCAMpp(self.values_obj, score_obj, i)
             cams_obj[i[1].item()] = cam
 
         for i in pred_aff.nonzero():
-            cam = self.getGradCAMpp(score_aff, i)
+            cam = self.getGradCAMpp(self.values_aff, score_aff, i)
             cams_aff[i[1].item()] = cam
 
         return cams_obj, cams_aff
@@ -224,11 +225,11 @@ class GradCAMpp(GradCAM):
     def __call__(self, x):
         return self.forward(x)
 
-    def getGradCAMpp(self, score, index):
+    def getGradCAMpp(self, values, score, index):
         self.model.zero_grad()
         score[index[0], index[1]].backward(retain_graph=True)
-        activations = self.values.activations
-        gradients = self.values.gradients
+        activations = values.activations
+        gradients = values.gradients
         n, c, _, _ = gradients.shape
 
         # calculate alpha

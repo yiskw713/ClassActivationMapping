@@ -15,7 +15,7 @@ import yaml
 
 from addict import Dict
 
-from dataset import PartAffordanceDataset, ToTensor
+from dataset import PartAffordanceDataset, ToTensor, Resize
 from dataset import CenterCrop, Normalize, reverse_normalize
 from model.resnet import ResNet50_convcam, ResNet50_linearcam, ResNet152_linearcam2
 from cam import CAM, GradCAM, GradCAMpp
@@ -34,14 +34,6 @@ def get_arguments():
                         help='choose a device you want to use')
 
     return parser.parse_args()
-
-
-def reverse_normalize(x, mean=[0.2191, 0.2349, 0.3598], 
-                      std=[0.1243, 0.1171, 0.0748]):
-    x[0, :, :] = x[0, :, :] * std[0] + mean[0]
-    x[1, :, :] = x[1, :, :] * std[1] + mean[1]
-    x[2, :, :] = x[2, :, :] * std[2] + mean[2]
-    return x
 
 
 def visualize(img, cam):
@@ -75,11 +67,12 @@ def main():
 
     # configuration
     CONFIG = Dict(
-        yaml.safe_load(open('./result/ResNet50_linearcam/config.yaml')))
+        yaml.safe_load(open(args.config)))
 
     """ DataLoader """
     test_transform = transforms.Compose([
         CenterCrop(CONFIG),
+        Resize(CONFIG),
         ToTensor(CONFIG),
         Normalize()
     ])
@@ -88,23 +81,35 @@ def main():
         CONFIG.test_data, config=CONFIG, transform=test_transform)
 
     test_loader = DataLoader(
-        test_data, batch_size=1, shuffle=False, num_workers=1)
+        test_data, batch_size=1, shuffle=True, num_workers=1)
 
     test_iter = iter(test_loader)
 
     """ Load Model """
-    model = ResNet50_linearcam(CONFIG.obj_classes, CONFIG.aff_classes)
+    if CONFIG.model == "ResNet50_convcam":
+        model = ResNet50_convcam(CONFIG.obj_classes, CONFIG.aff_classes)
+    elif CONFIG.model == "ResNet50_linearcam":
+        model = ResNet50_linearcam(CONFIG.obj_classes, CONFIG.aff_classes)
+    elif CONFIG.model == "ResNet152_linearcam2":
+        model = ResNet152_linearcam2(CONFIG.obj_classes, CONFIG.aff_classes)
+    elif CONFIG.model == "UNet":
+        model = UNet(CONFIG.obj_classes, CONFIG.aff_classes)
+    else:
+        print('ResNet50_linearcam will be used.')
+        model = ResNet50_linearcam(CONFIG.obj_classes, CONFIG.aff_classes)
+
     state_dict = torch.load(CONFIG.result_path + '/best_accuracy_model.prm',
                             map_location=lambda storage, loc: storage)
     model.load_state_dict(state_dict)
     model.eval()
 
-    target_layer = model.feature[-1][-1].conv3
+    target_layer_obj = model.conv_obj
+    target_layer_aff = model.conv_aff
 
     # choose CAM, GradCAM or GradCMApp
-    # wrapped_model = CAM(model, target_layer)
-    # wrapped_model = GradCAM(model, target_layer)
-    wrapped_model = GradCAMpp(model, target_layer)
+    # wrapped_model = CAM(model, target_layer_obj, target_layer_aff)
+    wrapped_model = GradCAM(model, target_layer_obj, target_layer_aff)
+    # wrapped_model = GradCAMpp(model, target_layer_obj, target_layer_aff)
 
     cnt = 0
     while True:

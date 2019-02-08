@@ -22,6 +22,7 @@ from tensorboardX import SummaryWriter
 from dataset import PartAffordanceDataset, ToTensor, CenterCrop, Normalize
 from dataset import Resize, RandomFlip, RandomRotate, ColorChange
 from model.resnet import ResNet50_convcam, ResNet50_linearcam, ResNet152_linearcam2
+from model.unet import UNet
 
 
 def get_arguments():
@@ -186,6 +187,8 @@ def main():
         model = ResNet50_linearcam(CONFIG.obj_classes, CONFIG.aff_classes)
     elif CONFIG.model == "ResNet152_linearcam2":
         model = ResNet152_linearcam2(CONFIG.obj_classes, CONFIG.aff_classes)
+    elif CONFIG.model == "UNet":
+        model = UNet(CONFIG.obj_classes, CONFIG.aff_classes)
     else:
         print('ResNet50_linearcam will be used.')
         model = ResNet50_linearcam(CONFIG.obj_classes, CONFIG.aff_classes)
@@ -236,7 +239,7 @@ def main():
         losses_val_obj.append(loss_val_obj)
         losses_val_aff.append(loss_val_aff)
         losses_val.append(loss_val_obj + loss_val_aff)
-        
+
         obj_class_accuracy_val.append(obj_class_accuracy)
         obj_accuracy_val.append(obj_accuracy)
         aff_class_accuracy_val.append(aff_class_accuracy)
