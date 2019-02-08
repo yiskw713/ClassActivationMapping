@@ -1,29 +1,24 @@
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import torch.nn.functional as F
-import torch.utils.model_zoo as model_zoo
 import torchvision
 
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms, models
+from torchvision.utils import save_image, make_grid
 
 import argparse
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-import random
-import skimage
+import cv2
 import sys
-import tqdm
 import yaml
 
 from addict import Dict
-from tensorboardX import SummaryWriter
 
-from dataset import PartAffordanceDataset, ToTensor, CenterCrop, Normalize
+from dataset import PartAffordanceDataset, ToTensor
+from dataset import CenterCrop, Normalize, ReverseNormalize
 from model.resnet import ResNet50_convcam, ResNet50_linearcam
-
+from cam import CAM, GradCAM, GradCAMpp
 
 
 def get_arguments():
@@ -31,130 +26,122 @@ def get_arguments():
     parse all the arguments from command line inteface
     return a list of parsed arguments
     '''
-    
-    parser = argparse.ArgumentParser(description='adversarial learning for affordance detection')
+
+    parser = argparse.ArgumentParser(
+        description='adversarial learning for affordance detection')
     parser.add_argument('config', type=str, help='path of a config file')
-    parser.add_argument('--device', type=str, default='cpu', help='choose a device you want to use')
+    parser.add_argument('--device', type=str, default='cpu',
+                        help='choose a device you want to use')
 
     return parser.parse_args()
 
 
-def reverse_normalize(x, mean=[0.2191, 0.2349, 0.3598], std=[0.1243, 0.1171, 0.0748]):
+def reverse_normalize(x, mean=[0.2191, 0.2349, 0.3598], 
+                      std=[0.1243, 0.1171, 0.0748]):
     x[0, :, :] = x[0, :, :] * std[0] + mean[0]
     x[1, :, :] = x[1, :, :] * std[1] + mean[1]
     x[2, :, :] = x[2, :, :] * std[2] + mean[2]
     return x
 
-def show_img(image):
-    img = reverse_normalize(image)
-    img = img.numpy()
-    plt.imshow(np.transpose(img, (1, 2, 0)))
-    plt.show()
 
+def visualize(img, cam):
+    """
+    Synthesize an image with CAM to make a result image.
+    Args:
+        img: (Tensor) shape => (1, 3, H, W)
+        cam: (Tensor) shape => (1, 1, H', W')
+    Return:
+        synthesized image (Tensor): shape =>(1, 3, H, W)
+    """
 
+    _, _, H, W = img.shape
+    cam = F.interpolate(cam, size=(H, W), mode='bilinear')
+    cam = 255 * cam.squeeze()
+    heatmap = cv2.applyColorMap(np.uint8(cam), cv2.COLORMAP_JET)
+    heatmap = torch.from_numpy(heatmap.transpose(2, 0, 1))
+    heatmap = heatmap.float() / 255
+    b, g, r = heatmap.split(1)
+    heatmap = torch.cat([r, g, b])
 
-class SaveFeatures():
-    features = None
-    def __init__(self, m):
-        # register a hook  to save features
-        self.hook = m.register_forward_hook(self.hook_fn)
-    
-    def hook_fn(self, module, input, output):
-        # save features
-        self.features = output.to('cpu').data
-                        
-    def remove(self):
-        self.hook.remove()
+    result = heatmap+img.cpu()
+    result = result.div(result.max())
 
-
-def getCAM(features, weight_fc):
-    '''
-    features: feature map before GAP.  shape => (N, C, H, W)
-    weight_fc: the weight of fully connected layer.  shape => (num_classes, C)
-    cam: class activation map.  shape=> (N, num_classes, H, W)
-    '''
-
-    cam = F.conv2d(features, weight=weight_fc[:, :, None, None])    # shape => (1, C, H, W)
-    cam = cam.squeeze()
-    return cam
-
+    return result
 
 
 def main():
-    
+
     args = get_arguments()
-    
+
     # configuration
-    CONFIG = Dict(yaml.safe_load(open(args.config)))
+    CONFIG = Dict(
+        yaml.safe_load(open('./result/ResNet50_linearcam/config.yaml')))
 
     """ DataLoader """
-    test_data = PartAffordanceDataset(CONFIG.test_data,
-                                        config=CONFIG,
-                                        transform=transforms.Compose([
-                                                    CenterCrop(CONFIG),
-                                                    ToTensor(CONFIG),
-                                                    Normalize()
-                                    ]))
+    test_transform = transforms.Compose([
+        CenterCrop(CONFIG),
+        ToTensor(CONFIG),
+        Normalize()
+    ])
 
-    test_loader = DataLoader(test_data, batch_size=1, shuffle=True, num_workers=1)
+    display_transform = transforms.Compose([ReverseNormalize()])
+
+    test_data = PartAffordanceDataset(
+        CONFIG.test_data, config=CONFIG, transform=test_transform)
+
+    test_loader = DataLoader(
+        test_data, batch_size=1, shuffle=False, num_workers=1)
+
     test_iter = iter(test_loader)
 
-    if CONFIG.model == "ResNet50_convcam":
-        model = ResNet50_convcam(CONFIG.obj_classes, CONFIG.aff_classes)
-    elif CONFIG.model == "ResNet50_linearcam":
-        model = ResNet50_linearcam(CONFIG.obj_classes, CONFIG.aff_classes)
-        final_conv = model._modules.get('layer4')
-        activated_features = SaveFeatures(final_conv)
-    else:
-        print('ResNet50_linearcam will be used.')
-        model = ResNet50_linearcam(CONFIG.obj_classes, CONFIG.aff_classes)
-        final_conv = model._modules.get('layer4')
-        activated_features = SaveFeatures(final_conv)
+    """ Load Model """
+    model = ResNet50_linearcam(CONFIG.obj_classes, CONFIG.aff_classes)
+    state_dict = torch.load(CONFIG.result_path + '/best_accuracy_model.prm',
+                            map_location=lambda storage, loc: storage)
+    model.load_state_dict(state_dict)
+    model.eval()
 
-    model.load_state_dict(torch.load(CONFIG.result_path + '/best_accuracy_model.prm', map_location=lambda storage, loc: storage))
-    model.to(args.device)
+    target_layer = model.feature[-1][-1].conv3
+
+    # choose CAM, GradCAM or GradCMApp
+    # wrapped_model = CAM(model, target_layer)
+    # wrapped_model = GradCAM(model, target_layer)
+    wrapped_model = GradCAMpp(model, target_layer)
 
     cnt = 0
-
     while True:
+        print('\n************ loading image ************\n')
         sample = test_iter.next()
-        x, y_obj, y_aff = sample['image'], sample['obj_label'], sample['aff_label']
+        img = sample['image']
+        print("object ids {}\n".format(sample['obj_label'].nonzero()))
+        print("affordance ids {}\n".format(sample['aff_label'].nonzero()))
 
-        # show images
-        show_img(x)
-        plt.savefig(CONFIG.result_path + 'image{}.png'.format(cnt))
+        # calculate cams
+        cams_obj, cams_aff = wrapped_model(img)
 
-        print('True Object\t{}\n'.format(y_obj))
-        print('True Affordance\t{}\n'.format(y_aff))
-        
-        with torch.no_grad():
-            x = x.to(args.device)
-            y_obj = y_obj.to(args.device)
-            y_aff = y_aff.to(args.device)
+        img = display_transform(img)
+        images = []    # save an input image and synthesized images with cams
+        images.append(img)
 
-            h = model(x)    # [ (N, C_obj, H/16, W/16), [(N, C_aff, H/16, W/16), ...]
+        for key, val in cams_obj.items():
+            result = visualize(img, val)
+            images.append(result)
 
-            # object prediction
-            h[0][h[0]>0.5] = 1
-            h[0][h[0]<=0.5] = 0
-            print('Pred Object\t{}\n'.format(h[0]))
+        for key, val in cams_aff.items():
+            result = visualize(img, val)
+            images.append(result)
 
-            # affordance prediction
-            h[1][h[1]>0.5] = 1
-            h[1][h[1]<=0.5] = 0
-            print('Pred Affordance\t{}\n'.format(h[1]))
-        
-        _, _, H, W = h[0].shape
+        images = make_grid(torch.cat(images, 0))
+        save_image(images, CONFIG.result_path + '/result{}.png'.format(cnt))
 
-        for o in h[0].nonzero():
-            if CONFIG.model == "ResNet50_convcam":
-                cam = h[3][o].reshape()
-                cam -= torch.min(cam)
-                cam /= torch.max(cam).reshape(H, W)
-                show_img(x.to("cpu"))
-                plt.imshow(cam, alpha=0.5, cmap='jet')
-            elif CONFIG.model == "ResNet50_linearcam":
-                weight_softmax_params = list(model._modules.get('fc').parameters())
+        # print('\nIf you want to quit, please press q. Else, press the others\n')
+        # i = input()
+        # if i == 'q':
+        #     break
+
+        if cnt == 500:
+            break
+        cnt += 1
 
 
 if __name__ == '__main__':

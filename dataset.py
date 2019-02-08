@@ -13,17 +13,17 @@ from PIL import Image, ImageFilter
 
 class PartAffordanceDataset(Dataset):
     """Part Affordance Dataset"""
-    
+
     def __init__(self, csv_file, config, transform=None):
         super().__init__()
-        
+
         self.df = pd.read_csv(csv_file)
         self.config = config
         self.transform = transform
-        
+
     def __len__(self):
         return len(self.df)
-    
+
     def __getitem__(self, idx):
         image_path = self.df.iloc[idx, 0]
         label_path = self.df.iloc[idx, 1]
@@ -31,17 +31,17 @@ class PartAffordanceDataset(Dataset):
 
         image = Image.open(image_path)
         aff_label = np.load(label_path)
-        
+
         sample = {'image': image, 'obj_label': obj_label, 'aff_label': aff_label}
-        
+
         if self.transform:
             sample = self.transform(sample)
 
         return sample
 
 
-
 ''' transforms for pre-processing '''
+
 
 def crop_center_pil_image(pil_img, crop_height, crop_width):
     w, h = pil_img.size
@@ -55,13 +55,12 @@ class CenterCrop(object):
     def __init__(self, config):
         super().__init__()
         self.config = config
-    
+
     def __call__(self, sample):
         image = sample['image']
         image = crop_center_pil_image(image, self.config.height, self.config.width)
         sample['image'] = image
         return sample
-
 
 
 def one_hot(label, n_classes, dtype):
@@ -72,7 +71,7 @@ def one_hot(label, n_classes, dtype):
 class ToTensor(object):
     def __init__(self, config):
         self.config = config
-    
+
     def __call__(self, sample):
         image, obj_label, aff_label = sample['image'], sample['obj_label'], sample['aff_label']
         return {'image': transforms.functional.to_tensor(image).float(),
@@ -80,12 +79,10 @@ class ToTensor(object):
                 'aff_label': torch.from_numpy(aff_label).float()}
 
 
-
 class Normalize(object):
     def __init__(self, mean=[0.2191, 0.2349, 0.3598], std=[0.1243, 0.1171, 0.0748]):
         self.mean = mean
         self.std = std
-
 
     def __call__(self, sample):
         image = sample['image']
@@ -94,12 +91,25 @@ class Normalize(object):
         return sample
 
 
+def reverse_normalize(x, mean=[0.2191, 0.2349, 0.3598], std=[0.1243, 0.1171, 0.0748]):
+    x[:, 0, :, :] = x[:, 0, :, :] * std[0] + mean[0]
+    x[:, 1, :, :] = x[:, 1, :, :] * std[1] + mean[1]
+    x[:, 2, :, :] = x[:, 2, :, :] * std[2] + mean[2]
+    return x
+
+
+class ReverseNormalize(object):
+    def __call__(self, image):
+        image = reverse_normalize(image)
+        return image
+
+
 '''
 obj_list = [
         'bowl',
         'cup',
         'hammer',
-        'knife', 
+        'knife',
         'ladle',
         'mallet',
         'mug',

@@ -22,18 +22,9 @@ class SaveValues():
         self.backward_hook.remove()
 
 
-def getCAM(features, weight_fc):
-    '''
-    features: feature map before GAP.  shape => (N, C, H, W)
-    weight_fc: the weight of fully connected layer.  shape => (num_classes, C)
-    cam: class activation map.  shape=> (N, num_classes, H, W)
-    '''
+""" Class Activation Mapping """
 
-    cam = F.conv2d(features, weight=weight_fc[:, :, None, None])
-
-    return cam
-
-
+# TODO: taraget_layer => target_layer_obj, target_layer_aff
 class CAM(object):
     def __init__(self, model, target_layer):
         """
@@ -54,7 +45,7 @@ class CAM(object):
             x: input image. shape =>(1, 3, H, W)
         Return:
             heatmap: class activation mappings of predicted classes
-                    [{obj_id: cam}, {aff_id1: cam1, aff_id2: cam2, ...}] 
+                    [{obj_id: cam}, {aff_id1: cam1, aff_id2: cam2, ...}]
         """
 
         pred_obj, pred_aff = self.model(x)
@@ -75,155 +66,185 @@ class CAM(object):
         weight_fc_obj = list(self.model._modules.get('fc_obj').parameters())[0].to('cpu').data
         weight_fc_aff = list(self.model._modules.get('fc_aff').parameters())[0].to('cpu').data
 
-        cam_obj = getCAM(self.values.activations, weight_fc_obj)
-        cam_aff = getCAM(self.values.activations, weight_fc_aff)
-
-        _, _, h, w = cam_obj.shape
-
         cams_obj = dict()
         cams_aff = dict()
 
         for i in pred_obj.nonzero():
-            cam = cam_obj[i[0], i[1], :, :]
-            cam = cam.view(h, w)
-            cam -= torch.min(cam)
-            cam /= torch.max(cam)
+            cam = self.getCAM(weight_fc_obj, i)
             cams_obj[i[1].item()] = cam    # i[i] is object id
 
         for i in pred_aff.nonzero():
-            cam = cam_aff[i[0], i[1], :, :]
-            cam = cam.view(h, w)
-            cam -= torch.min(cam)
-            cam /= torch.max(cam)
-            cams_aff[i[1].item()] = cam    # i[i] is affordance id
+            cam = self.getCAM(weight_fc_aff, i)
+            cams_aff[i[1].item()] = cam.data    # i[i] is affordance id
 
         return cams_obj, cams_aff
 
     def __call__(self, x):
         return self.forward(x)
 
+    def getCAM(self, weight_fc, index):
+        '''
+        activations: feature map before GAP.  shape => (N, C, H, W)
+        weight_fc: the weight of fully connected layer.  shape => (num_classes, C)
+        cam: class activation map.  shape=> (N, num_classes, H, W)
+        '''
 
-class GradCAM(object):
-    """Calculate GradCAM salinecy map.
-    A simple example:
-        # initialize a model, model_dict and gradcam
-        resnet = torchvision.models.resnet101(pretrained=True)
-        resnet.eval()
-        model_dict = dict(model_type='resnet', arch=resnet, layer_name='layer4', input_size=(224, 224))
-        gradcam = GradCAM(model_dict)
-        # get an image and normalize with mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)
-        img = load_img()
-        normed_img = normalizer(img)
-        # get a GradCAM saliency map on the class index 10.
-        mask, logit = gradcam(normed_img, class_idx=10)
-        # make heatmap from mask and synthesize saliency map using heatmap and img
-        heatmap, cam_result = visualize_cam(mask, img)
+        cam = F.conv2d(self.values.activations, weight=weight_fc[:, :, None, None])
+        _, _, h, w = cam.shape
+
+        cam = cam[index[0], index[1], :, :]
+        cam -= torch.min(cam)
+        cam /= torch.max(cam)
+        cam = cam.view(1, 1, h, w)
+
+        return cam.data
+
+
+""" Grad CAM """
+
+
+class GradCAM(CAM):
+    """
     Args:
-        model_dict (dict): a dictionary that contains 'model_type', 'arch', layer_name', 'input_size'(optional) as keys.
-        verbose (bool): whether to print output size of the saliency map givien 'layer_name' and 'input_size' in model_dict.
+        model: ResNet_linear()
+        target_layer: conv_layer before Global Average Pooling
     """
 
+    def __init__(self, model, target_layer):
+        super().__init__(model, target_layer)
 
-
-    def forward(self, input, class_idx=None, retain_graph=False):
+    def forward(self, x):
         """
         Args:
-            input: input image with shape of (1, 3, H, W)
-            class_idx (int): class index for calculating GradCAM.
-                    If not specified, the class index that makes the highest model prediction score will be used.
+            x: input image. shape =>(1, 3, H, W)
         Return:
-            mask: saliency map of the same spatial dimension with input
-            logit: model output
+            heatmap: class activation mappings of predicted classes
+                    [{obj_id: cam}, {aff_id1: cam1, aff_id2: cam2, ...}]
         """
-        b, c, h, w = input.size()
 
-        logit = self.model_arch(input)
-        if class_idx is None:
-            score = logit[:, logit.max(1)[-1]].squeeze()
-        else:
-            score = logit[:, class_idx].squeeze()
+        score_obj, score_aff = self.model(x)
 
-        self.model_arch.zero_grad()
-        score.backward(retain_graph=retain_graph)
-        gradients = self.gradients['value']
-        activations = self.activations['value']
-        b, k, u, v = gradients.size()
+        # object classification
+        pred_obj = torch.sigmoid(score_obj)
+        pred_obj[pred_obj > 0.5] = 1
+        pred_obj[pred_obj <= 0.5] = 0
 
-        alpha = gradients.view(b, k, -1).mean(2)
-        #alpha = F.relu(gradients.view(b, k, -1)).mean(2)
-        weights = alpha.view(b, k, 1, 1)
+        # affordance classification
+        pred_aff = torch.sigmoid(score_aff)
+        pred_aff[pred_aff > 0.5] = 1
+        pred_aff[pred_aff <= 0.5] = 0
 
-        saliency_map = (weights*activations).sum(1, keepdim=True)
-        saliency_map = F.relu(saliency_map)
-        saliency_map = F.upsample(saliency_map, size=(h, w), mode='bilinear', align_corners=False)
-        saliency_map_min, saliency_map_max = saliency_map.min(), saliency_map.max()
-        saliency_map = (saliency_map - saliency_map_min).div(saliency_map_max - saliency_map_min).data
+        print("predicted object ids {}".format(pred_obj))
+        print("predicted affordance ids {}".format(pred_aff))
 
-        return saliency_map, logit
+        cams_obj = dict()
+        cams_aff = dict()
 
-    def __call__(self, input, class_idx=None, retain_graph=False):
-        return self.forward(input, class_idx, retain_graph)
+        # caluculate cam of each predicted class
+        for i in pred_obj.nonzero():
+            cam = self.getGradCAM(score_obj, i)
+            cams_obj[i[1].item()] = cam
+
+        for i in pred_aff.nonzero():
+            cam = self.getGradCAM(score_aff, i)
+            cams_aff[i[1].item()] = cam
+
+        return cams_obj, cams_aff
+
+    def __call__(self, x):
+        return self.forward(x)
+
+    def getGradCAM(self, score, index):
+        self.model.zero_grad()
+        score[index[0], index[1]].backward(retain_graph=True)
+        activations = self.values.activations
+        gradients = self.values.gradients
+        n, c, _, _ = gradients.shape
+        alpha = gradients.view(n, c, -1).mean(2)
+        alpha = alpha.view(n, c, 1, 1)
+
+        cam = (alpha * activations).sum(dim=1, keepdim=True)    # shape => (1, 1, H', W')
+        cam = F.relu(cam)
+        cam -= torch.min(cam)
+        cam /= torch.max(cam)
+
+        return cam.data
 
 
 class GradCAMpp(GradCAM):
-    """Calculate GradCAM++ salinecy map.
-    A simple example:
-        # initialize a model, model_dict and gradcampp
-        resnet = torchvision.models.resnet101(pretrained=True)
-        resnet.eval()
-        model_dict = dict(model_type='resnet', arch=resnet, layer_name='layer4', input_size=(224, 224))
-        gradcampp = GradCAMpp(model_dict)
-        # get an image and normalize with mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225)
-        img = load_img()
-        normed_img = normalizer(img)
-        # get a GradCAM saliency map on the class index 10.
-        mask, logit = gradcampp(normed_img, class_idx=10)
-        # make heatmap from mask and synthesize saliency map using heatmap and img
-        heatmap, cam_result = visualize_cam(mask, img)
-    Args:
-        model_dict (dict): a dictionary that contains 'model_type', 'arch', layer_name', 'input_size'(optional) as keys.
-        verbose (bool): whether to print output size of the saliency map givien 'layer_name' and 'input_size' in model_dict.
     """
-    def __init__(self, model_dict, verbose=False):
-        super(GradCAMpp, self).__init__(model_dict, verbose)
+    Args:
+        model: ResNet_linear()
+        target_layer: conv_layer before Global Average Pooling
+    """
 
-    def forward(self, input, class_idx=None, retain_graph=False):
+    def __init__(self, model, target_layer):
+        super().__init__(model, target_layer)
+
+    def forward(self, x):
         """
         Args:
-            input: input image with shape of (1, 3, H, W)
-            class_idx (int): class index for calculating GradCAM.
-                    If not specified, the class index that makes the highest model prediction score will be used.
+            x: input image. shape =>(1, 3, H, W)
         Return:
-            mask: saliency map of the same spatial dimension with input
-            logit: model output
+            heatmap: class activation mappings of predicted classes
+                    [{obj_id: cam}, {aff_id1: cam1, aff_id2: cam2, ...}]
         """
-        b, c, h, w = input.size()
 
-        logit = self.model_arch(input)
-        if class_idx is None:
-            score = logit[:, logit.max(1)[-1]].squeeze()
-        else:
-            score = logit[:, class_idx].squeeze() 
-            
-        self.model_arch.zero_grad()
-        score.backward(retain_graph=retain_graph)
-        gradients = self.gradients['value'] # dS/dA
-        activations = self.activations['value'] # A
-        b, k, u, v = gradients.size()
+        score_obj, score_aff = self.model(x)
 
-        alpha_num = gradients.pow(2)
-        alpha_denom = gradients.pow(2).mul(2) + \
-                activations.mul(gradients.pow(3)).view(b, k, u*v).sum(-1, keepdim=True).view(b, k, 1, 1)
-        alpha_denom = torch.where(alpha_denom != 0.0, alpha_denom, torch.ones_like(alpha_denom))
+        # object classification
+        pred_obj = torch.sigmoid(score_obj)
+        pred_obj[pred_obj > 0.5] = 1
+        pred_obj[pred_obj <= 0.5] = 0
 
-        alpha = alpha_num.div(alpha_denom+1e-7)
-        positive_gradients = F.relu(score.exp()*gradients) # ReLU(dY/dA) == ReLU(exp(S)*dS/dA))
-        weights = (alpha*positive_gradients).view(b, k, u*v).sum(-1).view(b, k, 1, 1)
+        # affordance classification
+        pred_aff = torch.sigmoid(score_aff)
+        pred_aff[pred_aff > 0.5] = 1
+        pred_aff[pred_aff <= 0.5] = 0
 
-        saliency_map = (weights*activations).sum(1, keepdim=True)
-        saliency_map = F.relu(saliency_map)
-        saliency_map = F.upsample(saliency_map, size=(224, 224), mode='bilinear', align_corners=False)
-        saliency_map_min, saliency_map_max = saliency_map.min(), saliency_map.max()
-        saliency_map = (saliency_map-saliency_map_min).div(saliency_map_max-saliency_map_min).data
+        print("predicted object ids {}".format(pred_obj))
+        print("predicted affordance ids {}".format(pred_aff))
 
-        return saliency_map, logit
+        activations = self.values.activations
+
+        cams_obj = dict()
+        cams_aff = dict()
+
+        # caluculate cam of each predicted class
+        for i in pred_obj.nonzero():
+            cam = self.getGradCAMpp(score_obj, i)
+            cams_obj[i[1].item()] = cam
+
+        for i in pred_aff.nonzero():
+            cam = self.getGradCAMpp(score_aff, i)
+            cams_aff[i[1].item()] = cam
+
+        return cams_obj, cams_aff
+
+    def __call__(self, x):
+        return self.forward(x)
+
+    def getGradCAMpp(self, score, index):
+        self.model.zero_grad()
+        score[index[0], index[1]].backward(retain_graph=True)
+        activations = self.values.activations
+        gradients = self.values.gradients
+        n, c, _, _ = gradients.shape
+
+        # calculate alpha
+        numerator = gradients.pow(2)
+        denominator = 2 * gradients.pow(2)
+        denominator += (activations * gradients.pow(3)).view(n, c, -1).sum(-1, keepdim=True).view(n, c, 1, 1)
+        denominator = torch.where(
+            denominator != 0.0, denominator, torch.ones_like(denominator))
+        alpha = numerator / (denominator + 1e-7)
+
+        relu_grad = F.relu(score[index[0], index[1]].exp() * gradients)
+        weights = (alpha * relu_grad).view(n, c, -1).sum(-1).view(n, c, 1, 1)
+
+        cam = (weights * activations).sum(1, keepdim=True)    # shape => (1, 1, H', W')
+        cam = F.relu(cam)
+        cam -= torch.min(cam)
+        cam /= torch.max(cam)
+
+        return cam.data
