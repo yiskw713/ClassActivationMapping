@@ -6,6 +6,7 @@ from torchvision import transforms
 
 import numpy as np
 import pandas as pd
+import random
 import scipy.io
 
 from PIL import Image, ImageFilter
@@ -14,12 +15,13 @@ from PIL import Image, ImageFilter
 class PartAffordanceDataset(Dataset):
     """Part Affordance Dataset"""
 
-    def __init__(self, csv_file, config, transform=None):
+    def __init__(self, csv_file, config, transform=None, mode='training'):
         super().__init__()
 
         self.df = pd.read_csv(csv_file)
         self.config = config
         self.transform = transform
+        self.mode = mode    # mode => (training or test)
 
     def __len__(self):
         return len(self.df)
@@ -33,6 +35,11 @@ class PartAffordanceDataset(Dataset):
         aff_label = np.load(label_path)
 
         sample = {'image': image, 'obj_label': obj_label, 'aff_label': aff_label}
+
+        if self.mode == 'test':
+            label_path = self.df.iloc[idx, 3]
+            label = scipy.io.loadmat(label_path)["gt_label"]
+            sample['label'] = label
 
         if self.transform:
             sample = self.transform(sample)
@@ -51,6 +58,12 @@ def crop_center_pil_image(pil_img, crop_height, crop_width):
                         (h + crop_height) // 2))
 
 
+def crop_center_numpy(array, crop_height, crop_weight):
+    h, w = array.shape
+    return array[h//2 - crop_height//2: h//2 + crop_height//2,
+                 w//2 - crop_weight//2: w//2 + crop_weight//2]
+
+
 class CenterCrop(object):
     def __init__(self, config):
         super().__init__()
@@ -58,7 +71,72 @@ class CenterCrop(object):
 
     def __call__(self, sample):
         image = sample['image']
-        image = crop_center_pil_image(image, self.config.height, self.config.width)
+        image = crop_center_pil_image(
+            image, self.config.crop_height, self.config.crop_width)
+        sample['image'] = image
+
+        if 'label' in sample:
+            label = sample['label']
+            label = crop_center_numpy(
+                label, self.config.crop_height, self.config.crop_width)
+            sample['label'] = label
+
+        return sample
+
+
+# TODO: when you test the trained model, do not use Resize
+class Resize(object):
+    def __init__(self, config):
+        super().__init__()
+        self.config = config
+
+    def __call__(self, sample):
+        image = sample['image']
+        image = transforms.functional.resize(image, (self.config.height, self.config.width))
+        sample['image'] = image
+        return sample
+
+
+class RandomFlip(object):
+    def __init__(self, p=0.5):
+        super().__init__()
+        self.p = p
+
+    def __call__(self, sample):
+        if random.random() < self.p:
+            image = sample['image']
+            image = transforms.functional.hflip(image)
+            sample['image'] = image
+
+            if 'label' in sample:
+                label = sample['label']
+                label = np.fliplr(label)
+                sample['label'] = label
+            return sample
+
+        return sample
+
+
+class RandomRotate(object):
+    def __init__(self, degrees, resample=False, expand=False, center=None):
+        super().__init__()
+        self.transform = transforms.RandomRotation(degrees, resample, expand, center)
+
+    def __call__(self, sample):
+        image = sample['image']
+        image = self.transform(image)
+        sample['image'] = image
+        return sample
+
+
+class ColorChange(object):
+    def __init__(self, brightness=0.4, contrast=0.4, saturation=0.4, hue=0.1):
+        super().__init__()
+        self.transform = transforms.ColorJitter(brightness, contrast, saturation, hue)
+
+    def __call__(self, sample):
+        image = sample['image']
+        image = self.transform(image)
         sample['image'] = image
         return sample
 
@@ -97,11 +175,6 @@ def reverse_normalize(x, mean=[0.2191, 0.2349, 0.3598], std=[0.1243, 0.1171, 0.0
     x[:, 2, :, :] = x[:, 2, :, :] * std[2] + mean[2]
     return x
 
-
-class ReverseNormalize(object):
-    def __call__(self, image):
-        image = reverse_normalize(image)
-        return image
 
 
 '''

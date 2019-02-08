@@ -5,6 +5,8 @@ writer_flag: True              # if you use tensorboardx or not
 
 obj_classes: 17
 aff_classes: 7
+crop_height: 400
+crop_width: 400
 height: 256
 width: 256
 batch_size: 8

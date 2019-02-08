@@ -1,4 +1,4 @@
-model: ResNet50_convcam
+model: ResNet152_linearcam2
 
 class_weight_flag: False        # if you use class weight to calculate cross entropy or not
 writer_flag: True              # if you use tensorboardx or not
@@ -15,6 +15,6 @@ max_epoch: 20
 learning_rate: 0.0001
 poly_power: 0.9
 
-result_path: ./result/ResNet50_convcam
+result_path: ./result/ResNet152_linearcam2
 train_data: ./part-affordance-dataset/train.csv
 test_data: ./part-affordance-dataset/test.csv

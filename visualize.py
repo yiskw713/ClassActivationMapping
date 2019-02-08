@@ -16,8 +16,8 @@ import yaml
 from addict import Dict
 
 from dataset import PartAffordanceDataset, ToTensor
-from dataset import CenterCrop, Normalize, ReverseNormalize
-from model.resnet import ResNet50_convcam, ResNet50_linearcam
+from dataset import CenterCrop, Normalize, reverse_normalize
+from model.resnet import ResNet50_convcam, ResNet50_linearcam, ResNet152_linearcam2
 from cam import CAM, GradCAM, GradCAMpp
 
 
@@ -84,8 +84,6 @@ def main():
         Normalize()
     ])
 
-    display_transform = transforms.Compose([ReverseNormalize()])
-
     test_data = PartAffordanceDataset(
         CONFIG.test_data, config=CONFIG, transform=test_transform)
 
@@ -119,7 +117,7 @@ def main():
         # calculate cams
         cams_obj, cams_aff = wrapped_model(img)
 
-        img = display_transform(img)
+        img = reverse_normalize(img)
         images = []    # save an input image and synthesized images with cams
         images.append(img)
 
@@ -134,12 +132,9 @@ def main():
         images = make_grid(torch.cat(images, 0))
         save_image(images, CONFIG.result_path + '/result{}.png'.format(cnt))
 
-        # print('\nIf you want to quit, please press q. Else, press the others\n')
-        # i = input()
-        # if i == 'q':
-        #     break
-
-        if cnt == 500:
+        print('\nIf you want to quit, please press q. Else, press the others\n')
+        i = input()
+        if i == 'q':
             break
         cnt += 1
 
