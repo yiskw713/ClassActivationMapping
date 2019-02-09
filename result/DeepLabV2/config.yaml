@@ -1,0 +1,20 @@
+model: DeepLabV2
+
+class_weight_flag: False        # if you use class weight to calculate cross entropy or not
+writer_flag: True              # if you use tensorboardx or not
+
+obj_classes: 17
+aff_classes: 7
+crop_height: 400
+crop_width: 400
+height: 321
+width: 321
+batch_size: 8
+num_workers: 4
+max_epoch: 100
+learning_rate: 0.0001
+poly_power: 0.9
+
+result_path: ./result/DeepLabV2
+train_data: ./part-affordance-dataset/train.csv
+test_data: ./part-affordance-dataset/test.csv

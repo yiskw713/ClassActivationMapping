@@ -140,6 +140,8 @@ class DeepLabV2(nn.Module):
         self.fc_obj = nn.Linear(512, obj_classes)
         self.fc_aff = nn.Linear(512, aff_classes)
 
+        self.apply(self.init_weights)
+
     def forward(self, x):
         x = self.layer1(x)
         x = self.layer2(x)
@@ -160,3 +162,17 @@ class DeepLabV2(nn.Module):
         y_aff = self.fc_aff(y_aff)
 
         return [y_obj, y_aff]
+
+    def init_weights(self, m):
+        if isinstance(m, nn.Conv2d):
+            nn.init.kaiming_normal_(m.weight)
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+        elif isinstance(m, nn.Linear):
+            nn.init.kaiming_normal_(m.weight)
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+        elif isinstance(m, nn.BatchNorm2d):
+            nn.init.constant_(m.weight, 1)
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
