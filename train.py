@@ -182,6 +182,8 @@ def main():
     test_loader = DataLoader(test_data, batch_size=CONFIG.batch_size,
                              shuffle=False, num_workers=CONFIG.num_workers)
 
+    print('-------Loading Model-------\n')
+
     if CONFIG.model == "ResNet50_convcam":
         model = ResNet50_convcam(CONFIG.obj_classes, CONFIG.aff_classes)
     elif CONFIG.model == "ResNet50_linearcam":
@@ -219,7 +221,7 @@ def main():
     aff_accuracy_val = []
     best_accuracy = 0.0
 
-    for epoch in tqdm.tqdm(range(CONFIG.max_epoch)):
+    for epoch in range(CONFIG.max_epoch):
 
         poly_lr_scheduler(optimizer, CONFIG.learning_rate, 
                           epoch, max_iter=CONFIG.max_epoch, power=CONFIG.poly_power)
@@ -228,7 +230,8 @@ def main():
         epoch_loss_obj = 0.0
         epoch_loss_aff = 0.0
 
-        for sample in train_loader:
+        for sample in tqdm.tqdm(train_loader, total=len(train_loader)):
+            
             loss_train_obj, loss_train_aff = full_train(model, sample, criterion, optimizer, args.device)
 
             epoch_loss_obj += loss_train_obj
