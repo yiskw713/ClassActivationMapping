@@ -182,7 +182,7 @@ def main():
     test_loader = DataLoader(test_data, batch_size=CONFIG.batch_size,
                              shuffle=False, num_workers=CONFIG.num_workers)
 
-    print('-------Loading Model-------\n')
+    print('\n-------Loading Model-------\n')
 
     if CONFIG.model == "ResNet50_convcam":
         model = ResNet50_convcam(CONFIG.obj_classes, CONFIG.aff_classes)

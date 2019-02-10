@@ -132,13 +132,9 @@ class DeepLabV2(nn.Module):
         self.layer5 = _ResLayer(n_blocks[3], 1024, 512, 2048, 1, 4)
         self.aspp = _ASPP(2048, 1024, atrous_rates)        
 
-        self.conv_obj = nn.Conv2d(1024, 512, kernel_size=3, stride=1, padding=1)
-        self.bn_obj = nn.BatchNorm2d(512)
-        self.conv_aff = nn.Conv2d(1024, 512, kernel_size=3, stride=1, padding=1)
-        self.bn_aff = nn.BatchNorm2d(512)
+        self.conv_obj = nn.Conv2d(1024, obj_classes, kernel_size=1, stride=1)
+        self.conv_aff = nn.Conv2d(1024, aff_classes, kernel_size=1, stride=1)
         self.gap = nn.AdaptiveAvgPool2d((1, 1))
-        self.fc_obj = nn.Linear(512, obj_classes)
-        self.fc_aff = nn.Linear(512, aff_classes)
 
         self.apply(self.init_weights)
 
@@ -150,16 +146,13 @@ class DeepLabV2(nn.Module):
         x = self.layer5(x)
         x = self.aspp(x)
 
-        y_obj = F.relu(self.bn_obj(self.conv_obj(x)))
+        y_obj = F.relu(self.conv_obj(x))
         y_obj = self.gap(y_obj)
-        y_aff = F.relu(self.bn_aff(self.conv_aff(x)))
+        y_aff = F.relu(self.conv_aff(x))
         y_aff = self.gap(y_aff)
 
         y_obj = y_obj.view(x.shape[0], -1)
         y_aff = y_aff.view(x.shape[0], -1)
-
-        y_obj = self.fc_obj(y_obj)
-        y_aff = self.fc_aff(y_aff)
 
         return [y_obj, y_aff]
 
