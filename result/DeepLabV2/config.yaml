@@ -9,7 +9,7 @@ crop_height: 400
 crop_width: 400
 height: 256
 width: 256
-batch_size: 16
+batch_size: 8
 num_workers: 4
 max_epoch: 100
 learning_rate: 0.0001
