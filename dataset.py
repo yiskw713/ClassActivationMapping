@@ -110,7 +110,7 @@ class RandomFlip(object):
 
             if 'label' in sample:
                 label = sample['label']
-                label = np.fliplr(label)
+                label = np.flip(label, axis=0).copy()
                 sample['label'] = label
             return sample
 
@@ -151,10 +151,17 @@ class ToTensor(object):
         self.config = config
 
     def __call__(self, sample):
-        image, obj_label, aff_label = sample['image'], sample['obj_label'], sample['aff_label']
-        return {'image': transforms.functional.to_tensor(image).float(),
-                'obj_label': one_hot(obj_label, self.config.obj_classes, dtype=torch.float),
-                'aff_label': torch.from_numpy(aff_label).float()}
+        if 'label' in sample:
+            image, obj_label, aff_label, label = sample['image'], sample['obj_label'], sample['aff_label'], sample['label']
+            return {'image': transforms.functional.to_tensor(image).float(),
+                    'obj_label': one_hot(obj_label, self.config.obj_classes, dtype=torch.float),
+                    'aff_label': torch.from_numpy(aff_label).float(),
+                    'label': torch.from_numpy(label).long()}
+        else:
+            image, obj_label, aff_label = sample['image'], sample['obj_label'], sample['aff_label']
+            return {'image': transforms.functional.to_tensor(image).float(),
+                    'obj_label': one_hot(obj_label, self.config.obj_classes, dtype=torch.float),
+                    'aff_label': torch.from_numpy(aff_label).float()}
 
 
 class Normalize(object):
