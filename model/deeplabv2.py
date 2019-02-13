@@ -130,10 +130,10 @@ class DeepLabV2(nn.Module):
         self.layer3 = _ResLayer(n_blocks[1], 256, 128, 512, 2, 1)
         self.layer4 = _ResLayer(n_blocks[2], 512, 256, 1024, 1, 2)
         self.layer5 = _ResLayer(n_blocks[3], 1024, 512, 2048, 1, 4)
-        self.aspp = _ASPP(2048, 64, atrous_rates)        
+        self.aspp = _ASPP(2048, 32, atrous_rates)        
 
-        self.conv_obj = nn.Conv2d(64, obj_classes, kernel_size=1, stride=1)
-        self.conv_aff = nn.Conv2d(64, aff_classes, kernel_size=1, stride=1)
+        self.conv_obj = nn.Conv2d(32, obj_classes, kernel_size=1, stride=1)
+        self.conv_aff = nn.Conv2d(32, aff_classes, kernel_size=1, stride=1)
         self.gap = nn.AdaptiveAvgPool2d((1, 1))
 
         self.apply(self.init_weights)
