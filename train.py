@@ -24,6 +24,7 @@ from dataset import Resize, RandomFlip, RandomRotate, ColorChange
 from model.resnet import ResNet50_convcam, ResNet50_linearcam, ResNet152_linearcam2
 from model.unet import UNet
 from model.deeplabv2 import DeepLabV2
+from model.deeplabv2_linear import DeepLabV2_linear
 
 
 def get_arguments():
@@ -194,6 +195,10 @@ def main():
         model = UNet(CONFIG.obj_classes, CONFIG.aff_classes)
     elif CONFIG.model == 'DeepLabV2':
         model = DeepLabV2(
+            CONFIG.obj_classes, CONFIG.aff_classes, n_blocks=[3, 4, 23, 3], atrous_rates=[6, 12, 18, 24]
+        )
+    elif CONFIG.model == 'DeepLabV2_linear':
+        model = DeepLabV2_linear(
             CONFIG.obj_classes, CONFIG.aff_classes, n_blocks=[3, 4, 23, 3], atrous_rates=[6, 12, 18, 24]
         )
     else:
