@@ -123,7 +123,7 @@ class DeepLabV2_linear(nn.Module):
     """DeepLab v2 (OS=8)"""
 
     def __init__(self, obj_classes, aff_classes, n_blocks, atrous_rates):
-        super(DeepLabV2, self).__init__()
+        super().__init__()
         
         self.layer1 = _Stem()
         self.layer2 = _ResLayer(n_blocks[0], 64, 64, 256, 1, 1)
