@@ -2,22 +2,41 @@ import torch
 import torch.nn.functional as F
 
 from torch.utils.data import DataLoader
-from torchvision.utils import save_image, make_grid
+from torchvision.utils import save_image
 from torchvision import transforms
 
 import argparse
 import numpy as np
-import cv2
 import yaml
 
 from addict import Dict
 
-from dataset import PartAffordanceDataset, ToTensor, Resize
+from dataset import PartAffordanceDataset, ToTensor
 from dataset import CenterCrop, Normalize, reverse_normalize
 from model.resnet import ResNet50_convcam, ResNet50_linearcam, ResNet152_linearcam2
 from model.unet import UNet
-from model.deeplabv2_linear import DeepLabV2_linear, DeepLabV2_linear_max
 from cam import CAM, GradCAM, GradCAMpp
+from crf import DenseCRF
+
+
+# assign the colors to each class
+colors = torch.tensor([[0, 0, 0],         # class 0 'background'  black
+                       [255, 0, 0],       # class 1 'grasp'       red
+                       [255, 255, 0],     # class 2 'cut'         yellow
+                       [0, 255, 0],       # class 3 'scoop'       green
+                       [0, 255, 255],     # class 4 'contain'     sky blue
+                       [0, 0, 255],       # class 5 'pound'       blue
+                       [255, 0, 255],     # class 6 'support'     purple
+                       [255, 255, 255]    # class 7 'wrap grasp'  white
+                       ])
+
+
+# convert class prediction to the mask
+def class_to_mask(cls):
+
+    mask = colors[cls].transpose(1, 2).transpose(1, 3)
+
+    return mask
 
 
 def get_arguments():
@@ -35,31 +54,6 @@ def get_arguments():
     return parser.parse_args()
 
 
-def visualize(img, cam):
-    """
-    Synthesize an image with CAM to make a result image.
-    Args:
-        img: (Tensor) shape => (1, 3, H, W)
-        cam: (Tensor) shape => (1, 1, H', W')
-    Return:
-        synthesized image (Tensor): shape =>(1, 3, H, W)
-    """
-
-    _, _, H, W = img.shape
-    cam = F.interpolate(cam, size=(H, W), mode='bilinear')
-    cam = 255 * cam.squeeze()
-    heatmap = cv2.applyColorMap(np.uint8(cam), cv2.COLORMAP_JET)
-    heatmap = torch.from_numpy(heatmap.transpose(2, 0, 1))
-    heatmap = heatmap.float() / 255
-    b, g, r = heatmap.split(1)
-    heatmap = torch.cat([r, g, b])
-
-    result = heatmap + img.cpu()
-    result = result.div(result.max())
-
-    return result
-
-
 def main():
 
     args = get_arguments()
@@ -68,16 +62,18 @@ def main():
     CONFIG = Dict(
         yaml.safe_load(open(args.config)))
 
+    CONFIG.crop_width = 256
+    CONFIG.crop_height = 256
+
     """ DataLoader """
     test_transform = transforms.Compose([
         CenterCrop(CONFIG),
-        Resize(CONFIG),
         ToTensor(CONFIG),
         Normalize()
     ])
 
     test_data = PartAffordanceDataset(
-        CONFIG.test_data, config=CONFIG, transform=test_transform)
+        CONFIG.test_data, config=CONFIG, transform=test_transform, mode='test')
 
     test_loader = DataLoader(
         test_data, batch_size=1, shuffle=True, num_workers=1)
@@ -114,11 +110,18 @@ def main():
     wrapped_model = GradCAM(model, target_layer_obj, target_layer_aff)
     # wrapped_model = GradCAMpp(model, target_layer_obj, target_layer_aff)
 
+    postprocessor = DenseCRF()
+
     cnt = 0
+    intersection = torch.zeros(8)
+    union = torch.zeros(8)
     while True:
         print('\n************ loading image ************\n')
         sample = test_iter.next()
         img = sample['image']
+        label = sample['label']
+        _, _, H, W = img.shape
+
         print("object ids {}\n".format(sample['obj_label'].nonzero()))
         print("affordance ids {}\n".format(sample['aff_label'].nonzero()))
 
@@ -130,24 +133,53 @@ def main():
         images.append(img)
 
         for key, val in cams_obj.items():
-            result = visualize(img, val)
-            images.append(result)
+            cam_obj = cams_obj[key].squeeze(0)    # shape => (1, H', W')
 
+        _, h, w = cam_obj.shape
+        probmap = torch.zeros(
+            (1, CONFIG.aff_classes + 1, h, w))    # including bg
+        probmap[0, 0] = 0.7    # bg class id is the last index
         for key, val in cams_aff.items():
-            result = visualize(img, val)
-            images.append(result)
+            val = val.squeeze(0)
+            val = val - val.min()
+            val = val / val.max()
 
-        images = make_grid(torch.cat(images, 0))
-        save_image(images, CONFIG.result_path + '/result{}.png'.format(cnt))
+            probmap[0, key + 1] = \
+                torch.where(val > 0.7, val, torch.tensor(0.0))
 
-        print('\nIf you want to quit, please press q. Else, press the others\n')
-        # i = input()
-        # if i == 'q':
-        #     break
+        probmap = F.interpolate(probmap, size=(H, W), mode='bilinear')
+        probmap = F.softmax(probmap, dim=1)
+        # probmap = postprocessor(img.numpy().astype(np.uint8).transpose(0, 2, 3, 1).squeeze(0),
+        #                         probmap.squeeze(0).numpy())
+        # probmap = torch.from_numpy(probmap)
+        _, seg = probmap.max(1)    # shape => (1, H, W)
+        pred_mask = class_to_mask(seg)
+        true_mask = class_to_mask(label)
+
+        for i in range(8):
+            seg_i = (seg == i)
+            label_i = (label == i)
+
+            inter = (seg_i.byte() & label_i.byte()).float().sum()
+            intersection[i] += inter
+            union[i] += (seg_i.float().sum() + label_i.float().sum()) - inter
+
+        if cnt < 30:
+            save_image(img, CONFIG.result_path + '/img{}.png'.format(cnt))
+            save_image(pred_mask, CONFIG.result_path +
+                       '/pred_mask{}.png'.format(cnt))
+            save_image(true_mask, CONFIG.result_path +
+                       '/true_mask{}.png'.format(cnt))
+
         cnt += 1
 
-        if cnt == 20:
+        if cnt == 100:
             break
+
+    iou = intersection / union
+    m_iou = iou.mean().item()
+    print('class_iou: {}\n'.format(iou))
+    print('mean_iou: {}\n'.format(m_iou))
 
 
 if __name__ == '__main__':
