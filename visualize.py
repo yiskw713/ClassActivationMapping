@@ -108,8 +108,8 @@ def main():
     target_layer_aff = model.conv_aff
 
     # choose CAM, GradCAM or GradCMApp
-    wrapped_model = CAM(model, target_layer_obj, target_layer_aff)
-    # wrapped_model = GradCAM(model, target_layer_obj, target_layer_aff)
+    # wrapped_model = CAM(model, target_layer_obj, target_layer_aff)
+    wrapped_model = GradCAM(model, target_layer_obj, target_layer_aff)
     # wrapped_model = GradCAMpp(model, target_layer_obj, target_layer_aff)
 
     cnt = 0
