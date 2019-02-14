@@ -18,6 +18,7 @@ from addict import Dict
 from dataset import PartAffordanceDataset, ToTensor, Resize
 from dataset import CenterCrop, Normalize, reverse_normalize
 from model.resnet import ResNet50_convcam, ResNet50_linearcam, ResNet152_linearcam2
+from model.unet import UNet
 from cam import CAM, GradCAM, GradCAMpp
 
 
@@ -107,8 +108,8 @@ def main():
     target_layer_aff = model.conv_aff
 
     # choose CAM, GradCAM or GradCMApp
-    # wrapped_model = CAM(model, target_layer_obj, target_layer_aff)
-    wrapped_model = GradCAM(model, target_layer_obj, target_layer_aff)
+    wrapped_model = CAM(model, target_layer_obj, target_layer_aff)
+    # wrapped_model = GradCAM(model, target_layer_obj, target_layer_aff)
     # wrapped_model = GradCAMpp(model, target_layer_obj, target_layer_aff)
 
     cnt = 0
@@ -138,11 +139,13 @@ def main():
         save_image(images, CONFIG.result_path + '/result{}.png'.format(cnt))
 
         print('\nIf you want to quit, please press q. Else, press the others\n')
-        i = input()
-        if i == 'q':
-            break
+        # i = input()
+        # if i == 'q':
+        #     break
         cnt += 1
 
+        if cnt == 5:
+            break
 
 if __name__ == '__main__':
     main()
