@@ -24,7 +24,7 @@ from dataset import Resize, RandomFlip, RandomRotate, ColorChange
 from model.resnet import ResNet50_convcam, ResNet50_linearcam, ResNet152_linearcam2
 from model.unet import UNet
 from model.deeplabv2 import DeepLabV2
-from model.deeplabv2_linear import DeepLabV2_linear
+from model.deeplabv2_linear import DeepLabV2_linear, DeepLabV2_linear_max
 
 
 def get_arguments():
@@ -197,14 +197,28 @@ def main():
         model = DeepLabV2(
             CONFIG.obj_classes, CONFIG.aff_classes, n_blocks=[3, 4, 23, 3], atrous_rates=[6, 12, 18, 24]
         )
+        state_dict = torch.load('./deeplabv2_resnet101_COCO_init.pth',
+                                map_location=lambda storage, loc: storage)
+        model.load_state_dict(state_dict, strict=False)
     elif CONFIG.model == 'DeepLabV2_linear':
         model = DeepLabV2_linear(
             CONFIG.obj_classes, CONFIG.aff_classes, n_blocks=[3, 4, 23, 3], atrous_rates=[6, 12, 18, 24]
         )
+        state_dict = torch.load('./deeplabv2_resnet101_COCO_init.pth',
+                                map_location=lambda storage, loc: storage)
+        model.load_state_dict(state_dict, strict=False)
+    elif CONFIG.model == 'DeepLabV2_linear_max':
+        model = DeepLabV2_linear_max(
+            CONFIG.obj_classes, CONFIG.aff_classes, n_blocks=[3, 4, 23, 3], atrous_rates=[6, 12, 18, 24]
+        )
+        state_dict = torch.load('./deeplabv2_resnet101_COCO_init.pth',
+                                map_location=lambda storage, loc: storage)
+        model.load_state_dict(state_dict, strict=False)
     else:
         print('ResNet50_linearcam will be used.')
         model = ResNet50_linearcam(CONFIG.obj_classes, CONFIG.aff_classes)
 
+    print('Success\n')
     model.to(args.device)
 
     """ optimizer, criterion """
@@ -226,6 +240,7 @@ def main():
     aff_accuracy_val = []
     best_accuracy = 0.0
 
+    print('Start training.\n')
     for epoch in range(CONFIG.max_epoch):
 
         poly_lr_scheduler(optimizer, CONFIG.learning_rate, 
@@ -236,7 +251,7 @@ def main():
         epoch_loss_aff = 0.0
 
         for sample in tqdm.tqdm(train_loader, total=len(train_loader)):
-            
+
             loss_train_obj, loss_train_aff = full_train(model, sample, criterion, optimizer, args.device)
 
             epoch_loss_obj += loss_train_obj
@@ -248,7 +263,8 @@ def main():
         losses_train.append(epoch_loss / len(train_loader))
 
         # validation
-        loss_val_obj, obj_class_accuracy, obj_accuracy, loss_val_aff, aff_class_accuracy, aff_accuracy = eval_model(model, test_loader, criterion, CONFIG, args.device)
+        loss_val_obj, obj_class_accuracy, obj_accuracy, loss_val_aff, aff_class_accuracy, aff_accuracy = \
+            eval_model(model, test_loader, criterion, CONFIG, args.device)
         losses_val_obj.append(loss_val_obj)
         losses_val_aff.append(loss_val_aff)
         losses_val.append(loss_val_obj + loss_val_aff)

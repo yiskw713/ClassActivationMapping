@@ -124,7 +124,7 @@ class DeepLabV2_linear(nn.Module):
 
     def __init__(self, obj_classes, aff_classes, n_blocks, atrous_rates):
         super().__init__()
-        
+
         self.layer1 = _Stem()
         self.layer2 = _ResLayer(n_blocks[0], 64, 64, 256, 1, 1)
         self.layer3 = _ResLayer(n_blocks[1], 256, 128, 512, 2, 1)
@@ -153,6 +153,64 @@ class DeepLabV2_linear(nn.Module):
         y_obj = self.gap(y_obj)
         y_aff = F.relu(self.conv_aff(x))
         y_aff = self.gap(y_aff)
+
+        y_obj = y_obj.view(x.shape[0], -1)
+        y_aff = y_aff.view(x.shape[0], -1)
+
+        y_obj = self.fc_obj(y_obj)
+        y_aff = self.fc_aff(y_aff)
+
+        return [y_obj, y_aff]
+
+    def init_weights(self, m):
+        if isinstance(m, nn.Conv2d):
+            nn.init.kaiming_normal_(m.weight)
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+        elif isinstance(m, nn.Linear):
+            nn.init.kaiming_normal_(m.weight)
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+        elif isinstance(m, nn.BatchNorm2d):
+            nn.init.constant_(m.weight, 1)
+            if m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+
+
+class DeepLabV2_linear_max(nn.Module):
+    """DeepLab v2 (OS=8)"""
+
+    def __init__(self, obj_classes, aff_classes, n_blocks, atrous_rates):
+        super().__init__()
+
+        self.layer1 = _Stem()
+        self.layer2 = _ResLayer(n_blocks[0], 64, 64, 256, 1, 1)
+        self.layer3 = _ResLayer(n_blocks[1], 256, 128, 512, 2, 1)
+        self.layer4 = _ResLayer(n_blocks[2], 512, 256, 1024, 1, 2)
+        self.layer5 = _ResLayer(n_blocks[3], 1024, 512, 2048, 1, 4)
+        self.aspp = _ASPP(2048, 32, atrous_rates)        
+
+        self.conv_obj = nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1)
+        self.conv_aff = nn.Conv2d(32, 32, kernel_size=3, stride=1, padding=1)
+        self.gmp = nn.AdaptiveMaxPool2d((1, 1))
+
+        self.fc_obj = nn.Linear(32, obj_classes, bias=False)
+        self.fc_aff = nn.Linear(32, aff_classes, bias=False)
+
+        self.apply(self.init_weights)
+
+    def forward(self, x):
+        x = self.layer1(x)
+        x = self.layer2(x)
+        x = self.layer3(x)
+        x = self.layer4(x)
+        x = self.layer5(x)
+        x = self.aspp(x)
+
+        y_obj = F.relu(self.conv_obj(x))
+        y_obj = self.gmp(y_obj)
+        y_aff = F.relu(self.conv_aff(x))
+        y_aff = self.gmp(y_aff)
 
         y_obj = y_obj.view(x.shape[0], -1)
         y_aff = y_aff.view(x.shape[0], -1)
