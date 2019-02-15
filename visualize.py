@@ -110,14 +110,14 @@ def main():
     model.load_state_dict(state_dict)
     model.eval()
 
-    target_layer_obj = model.conv_obj
-    target_layer_aff = model.conv_aff
+    # target_layer_obj = model.conv_obj
+    # target_layer_aff = model.conv_aff
 
     # choose CAM, GradCAM or GradCMApp
     # wrapped_model = CAM(model, target_layer_obj, target_layer_aff)
-    wrapped_model = GradCAM(model, target_layer_obj, target_layer_aff)
+    # wrapped_model = GradCAM(model, target_layer_obj, target_layer_aff)
     # wrapped_model = GradCAMpp(model, target_layer_obj, target_layer_aff)
-    # wrapped_model = CAM(model, model.feature, model.feature)
+    wrapped_model = CAM(model, model.feature, model.feature)
     cnt = 0
     while True:
         print('\n************ loading image ************\n')
