@@ -5,3 +5,4 @@ __pycache__
 part-affordance-dataset/tools
 *.prm
 *.pth
+./result/*/*.png

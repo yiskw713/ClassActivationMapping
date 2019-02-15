@@ -93,6 +93,10 @@ def main():
         model = ResNet152_linearcam2(CONFIG.obj_classes, CONFIG.aff_classes)
     elif CONFIG.model == "UNet":
         model = UNet(CONFIG.obj_classes, CONFIG.aff_classes)
+    elif CONFIG.model == "DeepLabV2_linear":
+        model = DeepLabV2_linear(
+            CONFIG.obj_classes, CONFIG.aff_classes, n_blocks=[3, 4, 23, 3], atrous_rates=[6, 12, 18, 24]
+        )
     elif CONFIG.model == "DeepLabV2_linear_max":
         model = DeepLabV2_linear_max(
             CONFIG.obj_classes, CONFIG.aff_classes, n_blocks=[3, 4, 23, 3], atrous_rates=[6, 12, 18, 24]
@@ -113,7 +117,7 @@ def main():
     # wrapped_model = CAM(model, target_layer_obj, target_layer_aff)
     wrapped_model = GradCAM(model, target_layer_obj, target_layer_aff)
     # wrapped_model = GradCAMpp(model, target_layer_obj, target_layer_aff)
-
+    # wrapped_model = CAM(model, model.feature, model.feature)
     cnt = 0
     while True:
         print('\n************ loading image ************\n')
@@ -146,7 +150,7 @@ def main():
         #     break
         cnt += 1
 
-        if cnt == 20:
+        if cnt == 50:
             break
 
 
