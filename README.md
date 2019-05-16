@@ -1,7 +1,7 @@
 # ClassActivationMapping
 the implementation of Class Activation Mapping(CAM), Grad-CAM and Grad-CAM++ with pytorch
 
-## requirements
+## Requirements
 * python 3.x
 * pytorch >= 0.4
 * pillow
@@ -9,11 +9,11 @@ the implementation of Class Activation Mapping(CAM), Grad-CAM and Grad-CAM++ wit
 * opencv
 * matplotlib
 
-## how to use
+## How to use
 You can use the CAM, GradCAM and GradCAMpp class as a model wrapper described in `cam.py`.
 Please see `cam_demo.ipynb` for the detail.
 
-## Reference
+## References
 * Learning Deep Features for Discriminative Localization, 
   Bolei Zhou, Aditya Khosla, Agata Lapedriza, Aude Oliva, Antonio Torralba [[paper](http://cnnlocalization.csail.mit.edu/Zhou_Learning_Deep_Features_CVPR_2016_paper.pdf)]
 * Grad-CAM: Visual explanations from deep networks via gradient-based localization,
