@@ -27,7 +27,7 @@ class CAM(object):
     def __init__(self, model, target_layer):
         """
         Args:
-            model: ResNet_linear()
+            model: a base model to get CAM which have global pooling and fully connected layer.
             target_layer: conv_layer before Global Average Pooling
         """
 
